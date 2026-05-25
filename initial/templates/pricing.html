@@ -1,0 +1,724 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    main {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 5rem 1.5rem 7rem;
+    }
+
+    .hero {
+        text-align: center;
+        margin-bottom: 4rem;
+        animation: fadeUp .55s ease both;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: var(--accent-dim);
+        border: 1px solid rgba(0, 212, 170, .28);
+        color: var(--accent);
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        padding: .28rem .9rem;
+        border-radius: 999px;
+        margin-bottom: 1.6rem;
+    }
+
+    .hero-badge::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+        animation: pulse 2.5s infinite;
+    }
+
+    .pricing-h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -2px;
+        margin-bottom: 1rem;
+    }
+
+    .pricing-h1 span {
+        color: var(--accent);
+    }
+
+    .hero-sub {
+        color: var(--muted);
+        font-size: 1rem;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.75;
+    }
+
+    /* ── PLANS: 2-column centred ── */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        max-width: 780px;
+        margin: 0 auto 2.5rem;
+        animation: fadeUp .55s .12s ease both;
+    }
+
+    @media (max-width: 680px) {
+        .plans-grid {
+            grid-template-columns: 1fr;
+            max-width: 420px;
+        }
+    }
+
+    /* ── PLAN CARD ── */
+    .plan-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2.25rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: border-color .3s, box-shadow .3s, transform .3s;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-4px);
+    }
+
+    /* FREE card */
+    .plan-card.free:hover {
+        box-shadow: 0 0 32px rgba(0, 212, 170, .1);
+        border-color: rgba(0, 212, 170, .2);
+    }
+
+    /* PRO card */
+    .plan-card.pro {
+        border-color: rgba(0, 212, 170, .35);
+        background: linear-gradient(160deg, #0e1f1c 0%, #121920 100%);
+        box-shadow: 0 0 0 1px rgba(0, 212, 170, .12), var(--glow);
+    }
+
+    .plan-card.pro::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), #00b38f);
+    }
+
+    .plan-card.pro:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 0 0 1px rgba(0, 212, 170, .2), 0 0 60px rgba(0, 212, 170, .2);
+    }
+
+    .plan-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        padding: .22rem .7rem;
+        border-radius: 999px;
+        width: fit-content;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .badge-live {
+        background: var(--accent-dim);
+        border: 1px solid rgba(0, 212, 170, .28);
+        color: var(--accent);
+    }
+
+    .badge-soon {
+        background: rgba(245, 158, 11, .1);
+        border: 1px solid rgba(245, 158, 11, .25);
+        color: var(--amber);
+    }
+
+    .badge-soon::before {
+        content: '🚧 ';
+    }
+
+    .badge-live::before {
+        content: '● ';
+    }
+
+    .plan-name {
+        font-family: 'Outfit', sans-serif;
+        font-size: .85rem;
+        font-weight: 800;
+        color: var(--muted);
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        margin-top: .25rem;
+    }
+
+    .plan-price {
+        display: flex;
+        align-items: flex-end;
+        gap: .2rem;
+        line-height: 1;
+    }
+
+    .price-currency {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: .3rem;
+    }
+
+    .price-amount {
+        font-family: 'Outfit', sans-serif;
+        font-size: 3.2rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--text);
+        letter-spacing: -2px;
+    }
+
+    .plan-card.pro .price-amount {
+        color: var(--accent);
+    }
+
+    .price-period {
+        color: var(--muted);
+        font-size: .82rem;
+        margin-bottom: .28rem;
+    }
+
+    .plan-tagline {
+        color: var(--muted);
+        font-size: .83rem;
+        line-height: 1.6;
+    }
+
+    .divider-line {
+        height: 1px;
+        background: var(--border);
+    }
+
+    .feat-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: .7rem;
+    }
+
+    .feat-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        font-size: .85rem;
+        color: var(--text2);
+        line-height: 1.45;
+    }
+
+    .check {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: .05rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .6rem;
+        font-weight: 700;
+    }
+
+    .check-free {
+        background: var(--accent-dim);
+        color: var(--accent);
+    }
+
+    .check-pro {
+        background: rgba(16, 185, 129, .15);
+        color: var(--success);
+    }
+
+    /* ── BUTTONS ── */
+    .btn-plan {
+        width: 100%;
+        padding: .8rem 1rem;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s, border-color .2s, background .2s;
+        letter-spacing: .01em;
+        text-align: center;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+    }
+
+    .btn-free {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text2);
+    }
+
+    .btn-free:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+    }
+
+    /* disabled free button when already logged in */
+    .btn-free:disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .btn-pro-live {
+        background: var(--accent);
+        border: none;
+        color: #080c10;
+        box-shadow: 0 0 24px rgba(0, 212, 170, .35);
+    }
+
+    .btn-pro-live:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+        box-shadow: 0 0 38px rgba(0, 212, 170, .5);
+    }
+
+    /* COMING SOON button */
+    .btn-coming-soon {
+        background: rgba(245, 158, 11, .08);
+        border: 1px solid rgba(245, 158, 11, .22);
+        color: var(--amber);
+        cursor: not-allowed;
+        opacity: .75;
+        position: relative;
+    }
+
+    /* ── COMING SOON INFO BOX ── */
+    .coming-soon-box {
+        background: rgba(245, 158, 11, .06);
+        border: 1px solid rgba(245, 158, 11, .18);
+        border-radius: 10px;
+        padding: 1rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .csb-title {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--amber);
+        font-family: 'JetBrains Mono', monospace;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .csb-body {
+        font-size: .8rem;
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .csb-body a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .csb-body a:hover {
+        text-decoration: underline;
+    }
+
+    /* ── TRUST ROW ── */
+    .trust-row {
+        display: flex;
+        justify-content: center;
+        gap: 2.5rem;
+        flex-wrap: wrap;
+        margin-top: .5rem;
+        animation: fadeUp .55s .2s ease both;
+    }
+
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .8rem;
+        color: var(--muted);
+    }
+
+    /* ── FAQ ── */
+    .faq-section {
+        margin-top: 5.5rem;
+        animation: fadeUp .55s .28s ease both;
+    }
+
+    .faq-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .faq-header h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-bottom: .5rem;
+    }
+
+    .faq-header p {
+        color: var(--muted);
+        font-size: .875rem;
+    }
+
+    .faq-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 680px) {
+        .faq-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .faq-item {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: border-color .2s;
+    }
+
+    .faq-item.open {
+        border-color: rgba(0, 212, 170, .22);
+    }
+
+    .faq-question {
+        width: 100%;
+        background: none;
+        border: none;
+        color: var(--text2);
+        font-family: 'Outfit', sans-serif;
+        font-size: .875rem;
+        font-weight: 500;
+        padding: 1.2rem 1.4rem;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        transition: color .2s;
+    }
+
+    .faq-question:hover {
+        color: var(--accent);
+    }
+
+    .faq-icon {
+        font-size: 1.1rem;
+        color: var(--muted);
+        flex-shrink: 0;
+        transition: transform .3s, color .2s;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .faq-item.open .faq-icon {
+        transform: rotate(45deg);
+        color: var(--accent);
+    }
+
+    .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .35s ease, padding .3s;
+        padding: 0 1.4rem;
+        color: var(--muted);
+        font-size: .855rem;
+        line-height: 1.72;
+    }
+
+    .faq-item.open .faq-answer {
+        max-height: 200px;
+        padding: 0 1.4rem 1.2rem;
+    }
+
+    /* ── BOTTOM CTA ── */
+    .bottom-cta {
+        margin-top: 5.5rem;
+        text-align: center;
+        padding: 3.5rem 2rem;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        animation: fadeUp .55s .34s ease both;
+    }
+
+    .bottom-cta::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0, 212, 170, .06) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .bottom-cta h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-bottom: .75rem;
+    }
+
+    .bottom-cta p {
+        color: var(--muted);
+        font-size: .92rem;
+        max-width: 380px;
+        margin: 0 auto 2rem;
+        line-height: 1.65;
+    }
+
+    .btn-cta {
+        background: var(--accent);
+        border: none;
+        color: #080c10;
+        padding: .8rem 2.5rem;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+        box-shadow: 0 0 28px rgba(0, 212, 170, .4);
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        text-decoration: none;
+    }
+
+    .btn-cta:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+        box-shadow: 0 0 42px rgba(0, 212, 170, .55);
+    }
+</style>
+
+<main>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-badge">Pricing</div>
+        <h1 class="pricing-h1">Simple, <span>transparent pricing</span></h1>
+        <p class="hero-sub">Start free and analyze your resume instantly. Pro features are on the way.</p>
+    </div>
+
+    <!-- PLANS -->
+    <div class="plans-grid">
+
+        <!-- FREE -->
+        <div class="plan-card free">
+            <div>
+                <span class="plan-badge badge-live">Live</span>
+                <div class="plan-name" style="margin-top:.6rem;">Free</div>
+                <div class="plan-price" style="margin-top:.5rem;">
+                    <span class="price-currency">&#8377;</span>
+                    <span class="price-amount">0</span>
+                    <span class="price-period">/month</span>
+                </div>
+                <p class="plan-tagline" style="margin-top:.6rem;">Everything you need to get started &#8212; no card, no
+                    setup.</p>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <ul class="feat-list">
+                <li><span class="check check-free">&#10003;</span> 3 Resume Analyses per day</li>
+                <li><span class="check check-free">&#10003;</span> ATS Score Check</li>
+                <li><span class="check check-free">&#10003;</span> Keyword Gap Analysis</li>
+                <li><span class="check check-free">&#10003;</span> Skill Matching</li>
+                <li><span class="check check-free">&#10003;</span> Match Percentage Score</li>
+                <li><span class="check check-free">&#10003;</span> Improvement Suggestions</li>
+                <li><span class="check check-free">&#10003;</span> Analysis History (Dashboard)</li>
+            </ul>
+
+            {% if request.user.is_authenticated %}
+            <button class="btn-plan btn-free" disabled>&#10003; Current Plan</button>
+            {% else %}
+            <button class="btn-plan btn-free" onclick="openModal('signup')">Get Started Free &#8594;</button>
+            {% endif %}
+        </div>
+
+        <!-- PRO -->
+        <div class="plan-card pro">
+            <div>
+                <span class="plan-badge badge-soon">Coming Soon</span>
+                <div class="plan-name" style="margin-top:.6rem;">Pro</div>
+                <div class="plan-price" style="margin-top:.5rem;">
+                    <span class="price-currency">&#8377;</span>
+                    <span class="price-amount">5</span>
+                    <span class="price-period">/month</span>
+                </div>
+                <p class="plan-tagline" style="margin-top:.6rem;">For serious job seekers who need unlimited access and
+                    advanced insights.</p>
+            </div>
+
+            <div class="divider-line"></div>
+
+            <ul class="feat-list">
+                <li><span class="check check-pro">&#10003;</span> Everything in Free</li>
+                <li><span class="check check-pro">&#10003;</span> Unlimited Analyses</li>
+                <li><span class="check check-pro">&#10003;</span> Advanced AI Suggestions</li>
+                <li><span class="check check-pro">&#10003;</span> Resume Rewrite Recommendations</li>
+                <li><span class="check check-pro">&#10003;</span> Priority Processing</li>
+                <li><span class="check check-pro">&#10003;</span> Export PDF Report</li>
+                <li><span class="check check-pro">&#10003;</span> Cover Letter Generation</li>
+            </ul>
+
+            <!-- Coming Soon box — honest, no fake button -->
+            <div class="coming-soon-box">
+                <div class="csb-title">&#9888; Payment Integration In Progress</div>
+                <div class="csb-body">
+                    Razorpay subscription architecture is designed and the backend payment flow is planned.
+                    Live integration is pending gateway verification.
+                    <br /><br />
+                    Want early access? <a href="mailto:">Contact us</a> or watch the
+                    <a href="https://github.com/" target="_blank" rel="noopener">GitHub repo</a> for updates.
+                </div>
+            </div>
+
+            <button class="btn-plan btn-coming-soon" disabled>
+                &#128274; Coming Soon
+            </button>
+        </div>
+
+    </div>
+
+    <!-- TRUST ROW -->
+    <div class="trust-row">
+        <div class="trust-item">&#128274; Free plan needs no card</div>
+        <div class="trust-item">&#10003; Analysis stored in your dashboard</div>
+        <div class="trust-item">&#9889; Results in under 60 seconds</div>
+        <div class="trust-item">&#128274; Razorpay integration planned</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq-section">
+        <div class="faq-header">
+            <h2>Frequently asked questions</h2>
+            <p>Everything you need to know before getting started.</p>
+        </div>
+
+        <div class="faq-grid">
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Is the free plan really free? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    Yes, completely. No credit card, no hidden charges. Sign up with email and start analyzing
+                    immediately. You get 3 analyses per day, which is enough for most job seekers.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    When will Pro be available? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    Pro is currently in development. The Razorpay subscription architecture is designed and the backend
+                    flow is planned. Live payment gateway verification is the final step before launch.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What does the dashboard show? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    Your dashboard shows every resume analysis you've run — job title, match score, and date analyzed.
+                    Your history is tied to your account and persists across sessions.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    What counts as one analysis? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    One analysis = one resume + one job description submitted together. Free users get 3 per day. The
+                    counter resets at midnight.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Will my data be safe? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    Your resume text is processed by Gemini AI for analysis only. We store your match score and job
+                    title in a PostgreSQL database tied to your account. Your resume file is stored securely.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFaq(this)">
+                    Can I use it without an account? <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    Yes. You can run a single analysis without signing up. However, your history won't be saved. Create
+                    a free account to track past analyses and access your dashboard.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- BOTTOM CTA -->
+    <div class="bottom-cta">
+        <h2>Ready to improve your resume?</h2>
+        <p>Start your first analysis free &#8212; no credit card, instant results, under 60 seconds.</p>
+        <a href="{% url 'home' %}" class="btn-cta">Try ResumeIQ Free &#8594;</a>
+    </div>
+
+</main>
+
+<script>
+    function toggleFaq(btn) {
+        var item = btn.closest('.faq-item');
+        var isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(function (i) { i.classList.remove('open'); });
+        if (!isOpen) item.classList.add('open');
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    main {
+        position: relative;
+        z-index: 1;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 6rem;
+    }
+
+    /* HERO */
+    .hero {
+        text-align: center;
+        margin-bottom: 3.5rem;
+        animation: fadeUp .55s ease both;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: var(--accent-dim);
+        border: 1px solid rgba(0, 212, 170, .28);
+        color: var(--accent);
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        padding: .28rem .9rem;
+        border-radius: 999px;
+        margin-bottom: 1.6rem;
+    }
+
+    .hero-badge::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 6px var(--accent);
+        animation: pulse 2.5s infinite;
+    }
+
+    h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2.4rem, 5vw, 3.6rem);
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -2px;
+        margin-bottom: 1.1rem;
+        color: var(--text);
+    }
+
+    h1 span {
+        color: var(--accent);
+    }
+
+    .hero p {
+        color: var(--muted);
+        font-size: 1rem;
+        font-weight: 400;
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.75;
+    }
+
+    /* GRID */
+    .analyzer-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        animation: fadeUp .55s .12s ease both;
+    }
+
+    @media (max-width: 720px) {
+        .analyzer-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* DROP ZONE */
+    .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 2.5rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .25s, background .25s;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+        border-color: var(--accent);
+        background: var(--accent-dim);
+    }
+
+    .drop-icon {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 1rem;
+        background: var(--accent-dim);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .drop-zone h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 700;
+        margin-bottom: .4rem;
+    }
+
+    .drop-zone p {
+        font-size: .78rem;
+        color: var(--muted);
+        margin-bottom: 1.2rem;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .btn-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--accent-dim);
+        border: 1px solid rgba(0, 212, 170, .3);
+        color: var(--accent);
+        padding: .45rem 1rem;
+        border-radius: 8px;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .2s;
+    }
+
+    .btn-upload:hover {
+        background: rgba(0, 212, 170, .2);
+    }
+
+    .file-info {
+        display: none;
+        align-items: center;
+        gap: .75rem;
+        margin-top: 1rem;
+        background: rgba(16, 185, 129, .08);
+        border: 1px solid rgba(16, 185, 129, .2);
+        border-radius: 8px;
+        padding: .6rem 1rem;
+        font-size: .82rem;
+    }
+
+    .file-info.visible {
+        display: flex;
+    }
+
+    .file-info>span:first-child {
+        color: var(--success);
+        font-weight: 600;
+    }
+
+    .file-name {
+        color: var(--text);
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* TEXTAREA */
+    .textarea-wrap {
+        position: relative;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 175px;
+        resize: vertical;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem;
+        color: var(--text);
+        font-family: 'Outfit', sans-serif;
+        font-size: .875rem;
+        line-height: 1.7;
+        outline: none;
+        transition: border-color .25s, box-shadow .25s;
+    }
+
+    textarea::placeholder {
+        color: var(--muted);
+    }
+
+    textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .char-count {
+        position: absolute;
+        bottom: .6rem;
+        right: .8rem;
+        font-size: .7rem;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* SHARED INPUT STYLE */
+    .field-wrap {
+        margin-top: 1rem;
+    }
+
+    .field-label {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .72rem;
+        font-weight: 600;
+        color: var(--muted);
+        margin-bottom: .35rem;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+    }
+
+    .field-label .req {
+        color: var(--accent);
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: none;
+    }
+
+    .field-input {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: .62rem .9rem;
+        color: var(--text);
+        font-family: 'Outfit', sans-serif;
+        font-size: .875rem;
+        outline: none;
+        transition: border-color .25s, box-shadow .25s;
+    }
+
+    .field-input::placeholder {
+        color: var(--muted);
+    }
+
+    .field-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    /* CTA ROW */
+    .cta-row {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        justify-content: flex-end;
+        animation: fadeUp .55s .22s ease both;
+    }
+
+    .hint-text {
+        font-size: .78rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .btn-analyze .arrow {
+        display: inline-block;
+        transition: transform .2s;
+    }
+
+    .btn-analyze:hover .arrow {
+        transform: translateX(4px);
+    }
+
+    /* FEATURE CHIPS */
+    .features {
+        display: flex;
+        gap: .85rem;
+        flex-wrap: wrap;
+        margin-top: 3.5rem;
+        animation: fadeUp .55s .32s ease both;
+    }
+
+    .feat-chip {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .35rem .9rem;
+        font-size: .76rem;
+        color: var(--muted);
+        transition: border-color .2s, color .2s;
+    }
+
+    .feat-chip:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    .feat-chip em {
+        color: var(--text);
+        font-style: normal;
+        font-weight: 600;
+    }
+
+    /* LIMIT WARNING BAR */
+    .limit-bar {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        margin-top: 2rem;
+        background: rgba(245, 158, 11, .08);
+        border: 1px solid rgba(245, 158, 11, .22);
+        border-radius: 10px;
+        padding: .85rem 1.25rem;
+        font-size: .82rem;
+        color: var(--text2);
+        animation: fadeUp .4s ease both;
+    }
+
+    .limit-icon {
+        color: var(--amber);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .limit-bar strong {
+        color: var(--amber);
+        font-weight: 700;
+    }
+
+    .limit-bar a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .limit-bar a:hover {
+        text-decoration: underline;
+    }
+
+    .limit-bar button {
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+</style>
+
+<main>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-badge">AI-Powered &#183; Instant Analysis</div>
+        <h1>Match your resume to<br /><span>any job description</span></h1>
+        <p>Upload your resume and paste a job description. Our AI scores the fit, highlights gaps, and suggests
+            improvements in seconds.</p>
+    </div>
+
+    <!-- ANALYZER FORM -->
+    <form method="POST" enctype="multipart/form-data" action="{% url 'analyzer' %}">
+        {% csrf_token %}
+
+        <div class="analyzer-grid">
+
+            <!-- CARD 1: Upload Resume -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-teal">&#128196;</div>
+                    <div>
+                        <h2>Upload Resume</h2>
+                        <p>PDF format recommended</p>
+                    </div>
+                </div>
+
+                <div class="drop-zone" id="dropZone" ondragover="handleDragOver(event)"
+                    ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
+                    onclick="document.getElementById('resumeInput').click()">
+                    <div class="drop-icon">&#11014;&#65039;</div>
+                    <h3>Drop your resume here</h3>
+                    <p>Supports PDF, DOC, DOCX &middot; Max 5 MB</p>
+                    <label class="btn-upload" onclick="event.stopPropagation()">
+                        <span>Browse file</span>
+                        <input type="file" id="resumeInput" name="resume" class="file-input" accept=".pdf,.doc,.docx"
+                            onchange="handleFileSelect(this)" required />
+                    </label>
+                </div>
+
+                <div class="file-info" id="fileInfo">
+                    <span>&#10003;</span>
+                    <span class="file-name" id="fileName">resume.pdf</span>
+                    <button type="button" class="btn-ghost"
+                        style="padding:.28rem .65rem;font-size:.73rem;margin-left:auto;"
+                        onclick="clearFile()">Remove</button>
+                </div>
+            </div>
+
+            <!-- CARD 2: Job Description + Job Title -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon icon-amber">&#128188;</div>
+                    <div>
+                        <h2>Job Description</h2>
+                        <p>Paste the full JD for best results</p>
+                    </div>
+                </div>
+
+                <div class="textarea-wrap">
+                    <textarea id="jobDesc" name="job_description" required
+                        placeholder="Paste the job description here&#10;&#10;e.g. We are looking for a Python developer with 3+ years of experience in Django, REST APIs, and cloud platforms (AWS/GCP)..."
+                        oninput="updateCharCount(this)"></textarea>
+                    <span class="char-count" id="charCount">0 chars</span>
+                </div>
+
+                <!-- JOB TITLE — MANDATORY -->
+                <div class="field-wrap">
+                    <label class="field-label" for="jobTitle">
+                        Job Title <span class="req">&#8727; required</span>
+                    </label>
+                    <input type="text" id="jobTitle" name="job_title" class="field-input"
+                        placeholder="e.g. Backend Developer, Data Analyst, Product Manager" required />
+                </div>
+            </div>
+
+            <!-- CTA ROW -->
+            <div class="cta-row">
+                {% if request.user.is_authenticated %}
+                {% if request.user.userprofile.plan == "free" %}
+                <span class="hint-text">&#9889; Free plan &middot; 3 analyses/day</span>
+                {% else %}
+                <span class="hint-text">&#10022; Pro &middot; Unlimited analyses</span>
+                {% endif %}
+                {% else %}
+                <span class="hint-text">Free &#8212; no account needed to try</span>
+                {% endif %}
+
+                <button type="submit" class="btn-analyze">
+                    <span>Analyze Match</span>
+                    <span class="arrow">&#8594;</span>
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- FEATURE CHIPS -->
+    <div class="features">
+        <div class="feat-chip">&#10022; <em>ATS Score</em> check</div>
+        <div class="feat-chip">&#10022; <em>Keyword</em> gap analysis</div>
+        <div class="feat-chip">&#10022; <em>Skill</em> matching</div>
+        <div class="feat-chip">&#10022; <em>Improvement</em> suggestions</div>
+        <div class="feat-chip">&#10022; <em>Instant</em> results</div>
+    </div>
+
+    <!-- FREE LIMIT WARNING -->
+    {% if request.user.is_authenticated %}
+    <div class="limit-bar" id="limitBar">
+        <span class="limit-icon">&#9888;</span>
+        <span>
+            Free plan users get <strong>3 analyses per day</strong>.
+            <a href="{% url 'pricing' %}">Upgrade to Pro</a> for unlimited access.
+        </span>
+        <button type="button" onclick="document.getElementById('limitBar').style.display='none'"
+            style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;">
+            &#10005;
+        </button>
+    </div>
+    {% endif %}
+
+</main>
+
+{% endblock %}

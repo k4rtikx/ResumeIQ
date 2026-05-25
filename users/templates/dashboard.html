@@ -1,0 +1,803 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    main {
+        position: relative;
+        z-index: 1;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 3.5rem 1.5rem 6rem;
+    }
+
+    /* ── PAGE HEADER ── */
+    .dash-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+        animation: fadeUp .5s ease both;
+    }
+
+    .dash-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+    }
+
+    .dash-eyebrow {
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .dash-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        color: var(--text);
+    }
+
+    .dash-title span {
+        color: var(--accent);
+    }
+
+    .dash-subtitle {
+        font-size: .85rem;
+        color: var(--muted);
+        margin-top: .15rem;
+    }
+
+    /* ── TOP STATS ROW ── */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+        animation: fadeUp .5s .08s ease both;
+    }
+
+    @media (max-width: 860px) {
+        .stats-row {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        transition: border-color .3s, box-shadow .3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(0, 212, 170, .28);
+        box-shadow: var(--glow);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        opacity: 0;
+        transition: opacity .3s;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card.teal::before {
+        background: linear-gradient(90deg, var(--accent), #00b38f);
+    }
+
+    .stat-card.amber::before {
+        background: linear-gradient(90deg, var(--amber), #d97706);
+    }
+
+    .stat-card.rose::before {
+        background: linear-gradient(90deg, var(--rose), #e11d48);
+    }
+
+    .stat-card.blue::before {
+        background: linear-gradient(90deg, #38bdf8, #0284c7);
+    }
+
+    .stat-label {
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .stat-value {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--text);
+    }
+
+    .stat-card.teal .stat-value {
+        color: var(--accent);
+    }
+
+    .stat-card.amber .stat-value {
+        color: var(--amber);
+    }
+
+    .stat-card.rose .stat-value {
+        color: var(--rose);
+    }
+
+    .stat-card.blue .stat-value {
+        color: #38bdf8;
+    }
+
+    .stat-sub {
+        font-size: .75rem;
+        color: var(--muted);
+    }
+
+    /* ── PLAN + USAGE ROW ── */
+    .plan-usage-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        animation: fadeUp .5s .14s ease both;
+    }
+
+    @media (max-width: 640px) {
+        .plan-usage-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .info-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .info-card-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    /* plan badge */
+    .plan-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        padding: .22rem .75rem;
+        border-radius: 999px;
+    }
+
+    .plan-free {
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(0, 212, 170, .28);
+    }
+
+    .plan-pro {
+        background: rgba(245, 158, 11, .12);
+        color: var(--amber);
+        border: 1px solid rgba(245, 158, 11, .28);
+    }
+
+    .plan-premium {
+        background: rgba(251, 113, 133, .12);
+        color: var(--rose);
+        border: 1px solid rgba(251, 113, 133, .28);
+    }
+
+    .plan-features {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .plan-features li {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        font-size: .82rem;
+        color: var(--text2);
+    }
+
+    .plan-features li::before {
+        content: '&#10003;';
+        color: var(--accent);
+        font-size: .72rem;
+        flex-shrink: 0;
+    }
+
+    .upgrade-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        background: var(--accent);
+        color: #080c10;
+        border: none;
+        padding: .55rem 1rem;
+        border-radius: 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s;
+        box-shadow: 0 0 18px rgba(0, 212, 170, .3);
+        text-decoration: none;
+        width: 100%;
+        margin-top: .25rem;
+    }
+
+    .upgrade-btn:hover {
+        opacity: .88;
+        transform: translateY(-1px);
+    }
+
+    /* usage ring / bar */
+    .usage-numbers {
+        display: flex;
+        align-items: flex-end;
+        gap: .4rem;
+    }
+
+    .usage-used {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--accent);
+    }
+
+    .usage-total {
+        font-size: .95rem;
+        color: var(--muted);
+        padding-bottom: .35rem;
+    }
+
+    .usage-track {
+        height: 8px;
+        background: var(--surface);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .usage-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent), #00b38f);
+        transition: width .8s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .usage-fill.warn {
+        background: linear-gradient(90deg, var(--amber), #d97706);
+    }
+
+    .usage-fill.full {
+        background: linear-gradient(90deg, var(--rose), #e11d48);
+    }
+
+    .usage-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: .74rem;
+        color: var(--muted);
+    }
+
+    .usage-remaining {
+        color: var(--accent);
+        font-weight: 600;
+    }
+
+    .usage-remaining.warn {
+        color: var(--amber);
+    }
+
+    .usage-remaining.full {
+        color: var(--rose);
+    }
+
+    /* ── HISTORY TABLE ── */
+    .history-section {
+        animation: fadeUp .5s .2s ease both;
+    }
+
+    .history-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: .75rem;
+    }
+
+    .history-head h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .history-count {
+        font-size: .76rem;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: .2rem .7rem;
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .history-table {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .table-header {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+        padding: .75rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        font-size: .68rem;
+        font-weight: 600;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .table-row {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        transition: background .2s;
+    }
+
+    .table-row:last-child {
+        border-bottom: none;
+    }
+
+    .table-row:hover {
+        background: rgba(0, 212, 170, .03);
+    }
+
+    .row-title {
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 1rem;
+    }
+
+    .row-date {
+        font-size: .78rem;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .score-pill {
+        display: inline-flex;
+        align-items: center;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: .8rem;
+        font-weight: 700;
+        padding: .22rem .65rem;
+        border-radius: 999px;
+        width: fit-content;
+    }
+
+    .score-high {
+        background: rgba(16, 185, 129, .12);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, .25);
+    }
+
+    .score-mid {
+        background: rgba(245, 158, 11, .12);
+        color: var(--amber);
+        border: 1px solid rgba(245, 158, 11, .25);
+    }
+
+    .score-low {
+        background: rgba(251, 113, 133, .12);
+        color: var(--rose);
+        border: 1px solid rgba(251, 113, 133, .25);
+    }
+
+    .ats-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        padding: .2rem .6rem;
+        border-radius: 999px;
+        width: fit-content;
+    }
+
+    .ats-pass {
+        background: rgba(16, 185, 129, .10);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, .22);
+    }
+
+    .ats-fail {
+        background: rgba(251, 113, 133, .10);
+        color: var(--rose);
+        border: 1px solid rgba(251, 113, 133, .22);
+    }
+
+    .row-action a {
+        font-size: .78rem;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+        transition: opacity .2s;
+    }
+
+    .row-action a:hover {
+        opacity: .7;
+    }
+
+    /* empty state */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .empty-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--accent-dim);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .empty-state h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .empty-state p {
+        font-size: .85rem;
+        color: var(--muted);
+        max-width: 280px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 700px) {
+        .table-header {
+            display: none;
+        }
+
+        .table-row {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: .4rem;
+        }
+
+        .row-title {
+            grid-column: 1 / -1;
+        }
+
+        .row-action {
+            grid-column: 2;
+            text-align: right;
+        }
+    }
+</style>
+
+<main>
+
+    <!-- PAGE HEADER -->
+    <div class="dash-header">
+        <div class="dash-header-left">
+            <span class="dash-eyebrow">My Account</span>
+            <div class="dash-title">
+                Welcome back, <span>{{ request.user.email|truncatechars:20 }}</span>
+            </div>
+            <p class="dash-subtitle">Here's a summary of your resume analysis activity.</p>
+        </div>
+        <a href="{% url 'home' %}" class="btn-analyze" style="align-self:flex-end;">
+            &#43; New Analysis
+        </a>
+    </div>
+
+    <!-- TOP STATS -->
+    <div class="stats-row">
+        <div class="stat-card teal">
+            <span class="stat-label">Total Analyses</span>
+            <span class="stat-value">{{ analyses|length }}</span>
+            <span class="stat-sub">all time</span>
+        </div>
+        <div class="stat-card amber">
+            <span class="stat-label">Today's Usage</span>
+            <span class="stat-value" id="todayCount">0</span>
+            <span class="stat-sub">analyses today</span>
+        </div>
+        <div class="stat-card blue">
+            <span class="stat-label">Avg Match Score</span>
+            <span class="stat-value" id="avgScore">&#8212;</span>
+            <span class="stat-sub">across all analyses</span>
+        </div>
+        <div class="stat-card rose">
+            <span class="stat-label">Best Score</span>
+            <span class="stat-value" id="bestScore">&#8212;</span>
+            <span class="stat-sub">highest match %</span>
+        </div>
+    </div>
+
+    <!-- PLAN + DAILY USAGE -->
+    <div class="plan-usage-row">
+
+        <!-- PLAN CARD -->
+        <div class="info-card">
+            <div class="info-card-head">
+                <span class="info-card-title">Your Plan</span>
+                {% if request.user.userprofile.plan == "free" %}
+                <span class="plan-badge plan-free">Free</span>
+                {% elif request.user.userprofile.plan == "pro" %}
+                <span class="plan-badge plan-pro">&#9733; Pro</span>
+                {% else %}
+                <span class="plan-badge plan-premium">&#10022; Premium</span>
+                {% endif %}
+            </div>
+
+            {% if request.user.userprofile.plan == "free" %}
+            <ul class="plan-features">
+                <li>3 resume analyses per day</li>
+                <li>ATS score check</li>
+                <li>Keyword gap analysis</li>
+                <li>Basic suggestions</li>
+                <li>Match percentage</li>
+            </ul>
+            <a href="{% url 'pricing' %}" class="upgrade-btn">&#9889; Upgrade to Pro</a>
+
+            {% elif request.user.userprofile.plan == "pro" %}
+            <ul class="plan-features">
+                <li>Unlimited analyses</li>
+                <li>Advanced AI suggestions</li>
+                <li>Resume rewrite recommendations</li>
+                <li>Skill gap detection</li>
+                <li>Export PDF report</li>
+            </ul>
+            <a href="{% url 'pricing' %}" class="upgrade-btn"
+                style="background:var(--amber);box-shadow:0 0 18px rgba(245,158,11,.3);">
+                &#10022; Upgrade to Premium
+            </a>
+
+            {% else %}
+            <ul class="plan-features">
+                <li>Everything in Pro</li>
+                <li>Resume versions management</li>
+                <li>Interview preparation tips</li>
+                <li>Cover letter generation</li>
+                <li>Early access features</li>
+            </ul>
+            <div style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:.25rem;">
+                You're on the top plan &#10022;
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- DAILY USAGE CARD -->
+        <div class="info-card">
+            <div class="info-card-head">
+                <span class="info-card-title">Today's Usage</span>
+                <span style="font-size:.72rem;color:var(--muted);font-family:'JetBrains Mono',monospace;"
+                    id="usageDate"></span>
+            </div>
+
+            {% if request.user.userprofile.plan == "free" %}
+            <div class="usage-numbers">
+                <span class="usage-used" id="usageUsed">{{ today_count }}</span>
+                <span class="usage-total">/ 3 analyses</span>
+            </div>
+            <div class="usage-track">
+                <div class="usage-fill" id="usageFill"></div>
+            </div>
+            <div class="usage-meta">
+                <span>0</span>
+                <span class="usage-remaining" id="usageRemaining"></span>
+                <span>3</span>
+            </div>
+            <div style="font-size:.8rem;color:var(--muted);margin-top:.25rem;">
+                Resets at midnight &middot; <a href="{% url 'pricing' %}"
+                    style="color:var(--accent);text-decoration:none;font-weight:600;">Upgrade for unlimited</a>
+            </div>
+
+            {% else %}
+            <div class="usage-numbers">
+                <span class="usage-used" style="color:var(--accent);">&#8734;</span>
+                <span class="usage-total">unlimited</span>
+            </div>
+            <div class="usage-track">
+                <div class="usage-fill" style="width:100%;"></div>
+            </div>
+            <div style="font-size:.82rem;color:var(--muted);margin-top:.5rem;">
+                No daily limit on your plan. Analyze as many resumes as you need.
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="history-section">
+        <div class="history-head">
+            <h2>Analysis History</h2>
+            <span class="history-count">{{ analyses|length }} total</span>
+        </div>
+
+        <div class="history-table">
+            {% if analyses %}
+
+            <div class="table-header">
+                <span>Job Title</span>
+                <span>Date</span>
+                <span>Match Score</span>
+                <span>ATS</span>
+                <span>Action</span>
+            </div>
+
+            {% for analysis in analyses %}
+            <div class="table-row">
+                <span class="row-title">{{ analysis.job_title|default:"Untitled Role" }}</span>
+                <span class="row-date">{{ analysis.created_at|date:"d M Y" }}</span>
+                <span>
+                    {% if analysis.match_score >= 75 %}
+                    <span class="score-pill score-high">{{ analysis.match_score }}%</span>
+                    {% elif analysis.match_score >= 50 %}
+                    <span class="score-pill score-mid">{{ analysis.match_score }}%</span>
+                    {% else %}
+                    <span class="score-pill score-low">{{ analysis.match_score }}%</span>
+                    {% endif %}
+                </span>
+                <span>
+                    {% if analysis.match_score >= 60 %}
+                    <span class="ats-pill ats-pass">&#10003; Pass</span>
+                    {% else %}
+                    <span class="ats-pill ats-fail">&#10007; Fail</span>
+                    {% endif %}
+                </span>
+                <span class="row-action">
+                    <a href="{% url 'home' %}">Re-analyze &#8594;</a>
+                </span>
+            </div>
+            {% endfor %}
+
+            {% else %}
+
+            <div class="empty-state">
+                <div class="empty-icon">&#128196;</div>
+                <h3>No analyses yet</h3>
+                <p>Upload your resume and paste a job description to get your first ATS score.</p>
+                <a href="{% url 'home' %}" class="btn-analyze" style="margin-top:.5rem;">
+                    Start your first analysis &#8594;
+                </a>
+            </div>
+
+            {% endif %}
+        </div>
+    </div>
+
+</main>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+
+        // Today's date label
+        var d = new Date();
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var el = document.getElementById('usageDate');
+        if (el) el.textContent = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+
+        // Usage bar + remaining (free users)
+        var usedEl = document.getElementById('usageUsed');
+        var fillEl = document.getElementById('usageFill');
+        var remEl = document.getElementById('usageRemaining');
+        if (usedEl && fillEl && remEl) {
+            var used = parseInt(usedEl.textContent) || 0;
+            var pct = Math.min((used / 3) * 100, 100);
+            var rem = Math.max(3 - used, 0);
+            setTimeout(function () { fillEl.style.width = pct + '%'; }, 100);
+            if (used >= 3) {
+                fillEl.classList.add('full');
+                remEl.classList.add('full');
+                remEl.textContent = 'Limit reached';
+            } else if (used === 2) {
+                fillEl.classList.add('warn');
+                remEl.classList.add('warn');
+                remEl.textContent = rem + ' remaining';
+            } else {
+                remEl.textContent = rem + ' remaining';
+            }
+        }
+
+        // Compute avg + best score from table rows
+        var pills = document.querySelectorAll('.score-pill');
+        if (pills.length > 0) {
+            var scores = [];
+            pills.forEach(function (p) {
+                var v = parseInt(p.textContent);
+                if (!isNaN(v)) scores.push(v);
+            });
+            if (scores.length) {
+                var avg = Math.round(scores.reduce(function (a, b) { return a + b; }, 0) / scores.length);
+                var best = Math.max.apply(null, scores);
+                var avgEl = document.getElementById('avgScore');
+                var bestEl = document.getElementById('bestScore');
+                if (avgEl) avgEl.textContent = avg + '%';
+                if (bestEl) bestEl.textContent = best + '%';
+            }
+        }
+
+        // Today count stat card (already rendered by Django but let's highlight)
+        var todayEl = document.getElementById('todayCount');
+        if (todayEl) {
+            var tc = parseInt("{{ today_count|default:0 }}") || 0;
+            todayEl.textContent = tc;
+        }
+
+    });
+</script>
+
+{% endblock %}

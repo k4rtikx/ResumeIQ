@@ -1,0 +1,844 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    main {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 3.5rem 1.5rem 7rem;
+    }
+
+    .result-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+        animation: fadeUp .5s ease both;
+    }
+
+    .result-topbar-left {
+        display: flex;
+        flex-direction: column;
+        gap: .25rem;
+    }
+
+    .result-label {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .result-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 900;
+        letter-spacing: -.75px;
+    }
+
+    .result-title span {
+        color: var(--accent);
+    }
+
+    .topbar-actions {
+        display: flex;
+        gap: .75rem;
+        align-items: center;
+    }
+
+    .btn-home {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text2);
+        padding: .5rem 1.15rem;
+        border-radius: 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .825rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color .2s, color .2s, background .2s;
+        text-decoration: none;
+    }
+
+    .btn-home:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+    }
+
+    .score-hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+        animation: fadeUp .5s .08s ease both;
+    }
+
+    .score-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem 2rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .score-card.ats {
+        border-color: rgba(0, 212, 170, .35);
+    }
+
+    .score-card.match {
+        border-color: rgba(16, 185, 129, .3);
+    }
+
+    .score-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+    }
+
+    .score-card.ats::before {
+        background: linear-gradient(90deg, var(--accent), #00b38f);
+    }
+
+    .score-card.match::before {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .score-card-label {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .score-number-row {
+        display: flex;
+        align-items: flex-end;
+        gap: .75rem;
+    }
+
+    .score-number {
+        font-family: 'Outfit', sans-serif;
+        font-size: 4rem;
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .score-card.ats .score-number {
+        color: var(--accent);
+    }
+
+    .score-card.match .score-number {
+        color: var(--success);
+    }
+
+    .score-verdict {
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+        padding-bottom: .25rem;
+    }
+
+    .verdict-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        padding: .22rem .7rem;
+        border-radius: 999px;
+        width: fit-content;
+    }
+
+    .badge-pass {
+        background: rgba(16, 185, 129, .12);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, .25);
+    }
+
+    .badge-fail {
+        background: rgba(251, 113, 133, .12);
+        color: var(--rose);
+        border: 1px solid rgba(251, 113, 133, .25);
+    }
+
+    .badge-good {
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(0, 212, 170, .25);
+    }
+
+    .verdict-sub {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+
+    .progress-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .progress-track {
+        height: 8px;
+        background: var(--surface);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        width: 0;
+        transition: width 1.2s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .fill-ats {
+        background: linear-gradient(90deg, var(--accent), #00b38f);
+    }
+
+    .fill-match {
+        background: linear-gradient(90deg, var(--success), #059669);
+    }
+
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: .68rem;
+        color: var(--muted);
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        animation: fadeUp .5s .16s ease both;
+    }
+
+    .sec-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+        transition: border-color .3s;
+    }
+
+    .sec-card:hover {
+        border-color: rgba(0, 212, 170, .2);
+    }
+
+    .sec-card.full {
+        grid-column: 1 / -1;
+    }
+
+    .sec-head {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    .sec-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .95rem;
+    }
+
+    .si-teal {
+        background: var(--accent-dim);
+    }
+
+    .si-green {
+        background: rgba(16, 185, 129, .13);
+    }
+
+    .si-red {
+        background: var(--rose-dim);
+    }
+
+    .si-amber {
+        background: var(--amber-dim);
+    }
+
+    .si-purple {
+        background: rgba(99, 102, 241, .13);
+    }
+
+    .si-sky {
+        background: rgba(56, 189, 248, .13);
+    }
+
+    .sec-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 800;
+        letter-spacing: -.3px;
+    }
+
+    .sec-count {
+        margin-left: auto;
+        font-size: .7rem;
+        color: var(--muted);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: .15rem .6rem;
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .pill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: .78rem;
+        font-weight: 600;
+        padding: .3rem .75rem;
+        border-radius: 999px;
+    }
+
+    .pill-match {
+        background: rgba(16, 185, 129, .1);
+        color: var(--success);
+        border: 1px solid rgba(16, 185, 129, .25);
+    }
+
+    .pill-miss {
+        background: var(--rose-dim);
+        color: var(--rose);
+        border: 1px solid rgba(251, 113, 133, .25);
+    }
+
+    .bullet-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .bullet-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        font-size: .86rem;
+        color: var(--text2);
+        line-height: 1.55;
+    }
+
+    .dot-str {
+        color: var(--success);
+        font-size: .8rem;
+        margin-top: .15rem;
+        flex-shrink: 0;
+    }
+
+    .dot-sug {
+        color: var(--accent);
+        font-size: .8rem;
+        margin-top: .15rem;
+        flex-shrink: 0;
+    }
+
+    .kw-summary {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .kw-found-count {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2rem;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--accent);
+        letter-spacing: -1px;
+    }
+
+    .kw-sub {
+        font-size: .8rem;
+        color: var(--muted);
+    }
+
+    .kw-track {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .kw-track .progress-track {
+        height: 10px;
+    }
+
+    .kw-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .kw-group-label {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        margin-bottom: .6rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .kw-group-label.found {
+        color: var(--success);
+    }
+
+    .kw-group-label.missing {
+        color: var(--rose);
+    }
+
+    .section-scores {
+        display: flex;
+        flex-direction: column;
+        gap: .85rem;
+    }
+
+    .score-row {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+    .score-row-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .score-row-name {
+        font-size: .86rem;
+        color: var(--text2);
+    }
+
+    .score-row-val {
+        font-size: .86rem;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sr-track {
+        height: 6px;
+        background: var(--surface);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .sr-fill {
+        height: 100%;
+        border-radius: 999px;
+        width: 0;
+        transition: width 1.4s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .feedback-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem 1.4rem;
+        font-size: .9rem;
+        line-height: 1.75;
+        color: var(--text2);
+        border-left: 3px solid var(--accent);
+        font-style: italic;
+    }
+
+    .feedback-author {
+        margin-top: .85rem;
+        font-size: .75rem;
+        color: var(--muted);
+        font-style: normal;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .feedback-author::before {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 1px;
+        background: var(--border);
+    }
+
+    .again-row {
+        margin-top: 3rem;
+        text-align: center;
+        animation: fadeUp .5s .3s ease both;
+    }
+
+    .again-row p {
+        color: var(--muted);
+        font-size: .875rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-again {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: var(--accent);
+        border: none;
+        color: #080c10;
+        padding: .75rem 2.25rem;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .95rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+        box-shadow: 0 0 28px rgba(0, 212, 170, .4);
+        text-decoration: none;
+    }
+
+    .btn-again:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+        box-shadow: 0 0 42px rgba(0, 212, 170, .55);
+    }
+
+    @media (max-width: 700px) {
+        .result-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .score-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .kw-cols {
+            grid-template-columns: 1fr;
+        }
+
+        .sec-card.full {
+            grid-column: 1;
+        }
+    }
+</style>
+
+<main>
+
+    <!-- TOP BAR -->
+    <div class="result-topbar">
+        <div class="result-topbar-left">
+            <span class="result-label">Analysis Complete</span>
+            <div class="result-title">Your Resume <span>Report</span></div>
+        </div>
+        <div class="topbar-actions">
+            <a href="{% url 'home' %}" class="btn-home">&#8592; Analyze Another</a>
+        </div>
+    </div>
+
+    <!-- SCORE HERO -->
+    <div class="score-hero">
+
+        <div class="score-card ats">
+            <span class="score-card-label">ATS Score</span>
+            <div class="score-number-row">
+                <span class="score-number">{{ result.ats_score|default:0 }}%</span>
+                <div class="score-verdict">
+                    {% if result.ats_score >= 60 %}
+                    <span class="verdict-badge badge-pass">&#10003; ATS Passed</span>
+                    {% else %}
+                    <span class="verdict-badge badge-fail">&#10007; Needs Work</span>
+                    {% endif %}
+                    <span class="verdict-sub">Threshold: 60%</span>
+                </div>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-track">
+                    <div class="progress-fill fill-ats" id="atsBar"></div>
+                </div>
+                <div class="progress-labels"><span>0</span><span>60% pass mark</span><span>100</span></div>
+            </div>
+        </div>
+
+        <div class="score-card match">
+            <span class="score-card-label">Job Match</span>
+            <div class="score-number-row">
+                <span class="score-number">{{ result.match_score|default:0 }}%</span>
+                <div class="score-verdict">
+                    {% if result.match_score >= 70 %}
+                    <span class="verdict-badge badge-pass">Strong Match</span>
+                    {% elif result.match_score >= 50 %}
+                    <span class="verdict-badge badge-good">Good Match</span>
+                    {% else %}
+                    <span class="verdict-badge badge-fail">Low Match</span>
+                    {% endif %}
+                    <span class="verdict-sub">vs. job description</span>
+                </div>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-track">
+                    <div class="progress-fill fill-match" id="matchBar"></div>
+                </div>
+                <div class="progress-labels"><span>0</span><span>50% avg</span><span>100</span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RESULT GRID -->
+    <div class="result-grid">
+
+        <!-- MATCHED SKILLS -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-green">&#9989;</div>
+                <span class="sec-title">Matched Skills</span>
+                <span class="sec-count">{{ result.matched_skills|length }} found</span>
+            </div>
+            <div class="pill-list">
+                {% for skill in result.matched_skills %}
+                <span class="pill pill-match">&#10003; {{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- MISSING SKILLS -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-red">&#10060;</div>
+                <span class="sec-title">Missing Skills</span>
+                <span class="sec-count">{{ result.missing_skills|length }} gaps</span>
+            </div>
+            <div class="pill-list">
+                {% for skill in result.missing_skills %}
+                <span class="pill pill-miss">&#10007; {{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- KEYWORD ANALYSIS -->
+        <div class="sec-card full">
+            <div class="sec-head">
+                <div class="sec-icon si-teal">&#128269;</div>
+                <span class="sec-title">Keyword Analysis</span>
+            </div>
+            <div class="kw-summary">
+                <div>
+                    <div class="kw-found-count">{{ result.keywords_found|default:0 }}/{{ result.keywords_total|default:0
+                        }}</div>
+                    <div class="kw-sub">keywords matched</div>
+                </div>
+                <div class="kw-track">
+                    <div class="progress-track">
+                        <div class="progress-fill fill-ats" id="kwBar"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="kw-cols">
+                <div>
+                    <div class="kw-group-label found">&#10003; Found in Resume</div>
+                    <div class="pill-list">
+                        {% for kw in result.keywords_found_list %}
+                        <span class="pill pill-match">{{ kw }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <div class="kw-group-label missing">&#10007; Missing Keywords</div>
+                    <div class="pill-list">
+                        {% for kw in result.keyword_gaps %}
+                        <span class="pill pill-miss">{{ kw }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STRENGTHS -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-green">&#128170;</div>
+                <span class="sec-title">Resume Strengths</span>
+            </div>
+            <ul class="bullet-list">
+                {% for point in result.strong_points %}
+                <li><span class="dot-str">&#9679;</span> {{ point }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- IMPROVEMENT SUGGESTIONS -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-amber">&#128161;</div>
+                <span class="sec-title">Improvement Suggestions</span>
+            </div>
+            <ul class="bullet-list">
+                {% for s in result.suggestions %}
+                <li><span class="dot-sug">&#8594;</span> {{ s }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- SECTION SCORES -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-purple">&#128202;</div>
+                <span class="sec-title">Section-by-Section Review</span>
+            </div>
+            <div class="section-scores">
+
+                <div class="score-row">
+                    <div class="score-row-head">
+                        <span class="score-row-name">Summary</span>
+                        <span class="score-row-val" style="color:var(--accent)">
+                            {% if result.section_scores %}{{ result.section_scores.summary }}{% else %}0{% endif %}/10
+                        </span>
+                    </div>
+                    <div class="sr-track">
+                        <div class="sr-fill" id="sr0"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.summary }}{% else %}0{% endif %}"
+                            style="background:var(--accent)"></div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-head">
+                        <span class="score-row-name">Skills</span>
+                        <span class="score-row-val" style="color:var(--success)">
+                            {% if result.section_scores %}{{ result.section_scores.skills }}{% else %}0{% endif %}/10
+                        </span>
+                    </div>
+                    <div class="sr-track">
+                        <div class="sr-fill" id="sr1"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.skills }}{% else %}0{% endif %}"
+                            style="background:var(--success)"></div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-head">
+                        <span class="score-row-name">Projects</span>
+                        <span class="score-row-val" style="color:#38bdf8">
+                            {% if result.section_scores %}{{ result.section_scores.projects }}{% else %}0{% endif %}/10
+                        </span>
+                    </div>
+                    <div class="sr-track">
+                        <div class="sr-fill" id="sr2"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.projects }}{% else %}0{% endif %}"
+                            style="background:#38bdf8"></div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-head">
+                        <span class="score-row-name">Experience</span>
+                        <span class="score-row-val" style="color:var(--amber)">
+                            {% if result.section_scores %}{{ result.section_scores.experience }}{% else %}0
+                            {% endif %}/10
+                        </span>
+                    </div>
+                    <div class="sr-track">
+                        <div class="sr-fill" id="sr3"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.experience }}{% else %}0{% endif %}"
+                            style="background:var(--amber)"></div>
+                    </div>
+                </div>
+
+                <div class="score-row">
+                    <div class="score-row-head">
+                        <span class="score-row-name">Education</span>
+                        <span class="score-row-val" style="color:var(--rose)">
+                            {% if result.section_scores %}{{ result.section_scores.education }}{% else %}0{% endif %}/10
+                        </span>
+                    </div>
+                    <div class="sr-track">
+                        <div class="sr-fill" id="sr4"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.education }}{% else %}0{% endif %}"
+                            style="background:var(--rose)"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RECRUITER FEEDBACK -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-icon si-sky">&#129302;</div>
+                <span class="sec-title">AI Recruiter Feedback</span>
+            </div>
+            <div class="feedback-box">
+                {{ result.project_alignment }}
+                <div class="feedback-author">ResumeIQ AI &middot; Based on your resume &amp; JD</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ANALYZE AGAIN -->
+    <div class="again-row">
+        <p>Want to try a different job description or updated resume?</p>
+        <a href="{% url 'home' %}" class="btn-again">&#8592; Analyze Another Resume</a>
+    </div>
+
+</main>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        var atsScore = parseInt("{{ result.ats_score|default:0 }}") || 0;
+        var matchScore = parseInt("{{ result.match_score|default:0 }}") || 0;
+        var kwFound = parseInt("{{ result.keywords_found|default:0 }}") || 0;
+        var kwTotal = parseInt("{{ result.keywords_total|default:1 }}") || 1;
+
+        setTimeout(function () {
+            var atsBar = document.getElementById('atsBar');
+            var matchBar = document.getElementById('matchBar');
+            var kwBar = document.getElementById('kwBar');
+            if (atsBar) atsBar.style.width = atsScore + '%';
+            if (matchBar) matchBar.style.width = matchScore + '%';
+            if (kwBar) kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
+
+            for (var i = 0; i < 5; i++) {
+                var bar = document.getElementById('sr' + i);
+                if (bar) {
+                    var val = parseFloat(bar.getAttribute('data-val')) || 0;
+                    bar.style.width = (val * 10) + '%';
+                }
+            }
+        }, 150);
+    });
+</script>
+
+{% endblock %}
