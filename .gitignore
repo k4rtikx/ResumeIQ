@@ -11,3 +11,4 @@ test_gemini.py
 venv/
 __pycache__/
 *.pyc
+initial/.env
