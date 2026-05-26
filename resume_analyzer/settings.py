@@ -96,29 +96,23 @@ WSGI_APPLICATION = "resume_analyzer.wsgi.application"
 from dotenv import load_dotenv
 import os
 import dj_database_url
+import os
 
-load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Use DATABASE_URL (Neon/Render single connection string) if available,
-# otherwise fall back to individual DB_* variables for local development.
-_DATABASE_URL = os.getenv('DATABASE_URL')
-if _DATABASE_URL:
+if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.config(
-            default=_DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True,
-        )
+        "default": dj_database_url.parse(DATABASE_URL)
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'resume_analyzer'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
+            "PORT": os.getenv("DB_PORT"),
         }
     }
 
