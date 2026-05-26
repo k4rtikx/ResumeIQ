@@ -6,3 +6,8 @@ db.sqlite3
 media/
 vlearning_phase/
 test_gemini.py
+.env
+*.env
+venv/
+__pycache__/
+*.pyc

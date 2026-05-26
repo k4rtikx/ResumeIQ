@@ -19,25 +19,25 @@ def analyzer(request):
         job_description = request.POST.get("job_description")
         job_title = request.POST.get("job_title")
         #job_title=request.POST.get("job_title")
-        print(resume)
-        print(job_description)
-        #print(job_title)
+        print(f"receiving the file {resume}")
+        print(f"receiving the job_description {job_description}")
+        print(f"receiving the job_title {job_title}")
         # your Gemini analysis logic here...
         # result = analyze_resume(resume_text, job_description)
 
         """check three times that user upload resume or not"""
         if request.user.is_authenticated:
-            print("USER:", request.user)
-            print("USER ID:", request.user.id)
-            print("AUTH:", request.user.is_authenticated)
+            print("USER:, request.user")
+            print("USER ID:, request.user.id")
+            print("AUTH:, request.user.is_authenticated")
             
             # Use get_or_create — safe whether signal creates it or not
             profile, created = UserProfile.objects.get_or_create(
                 user=request.user,
                 defaults={"plan": "free"}
             )
-            print("Profile plan:", profile.plan)
-            print("Profile plan:", profile)
+            print("Profile plan:, profile.plan")
+            print("Profile plan:, profile")
             
             if profile.plan == "free":
                 today_count = ResumeAnalysis.objects.filter(
@@ -63,7 +63,6 @@ def analyzer(request):
             return render(request, "analyzer.html", {"result": result})
         
         except Exception as e:
-            print(e)
             return HttpResponse(
                 f"AI service temporarily unavailable. Please try again later and Error: {str(e)}",
                 status=500

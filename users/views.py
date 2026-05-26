@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render , redirect
 from django.http import HttpResponse
 # Create your views here.
 
@@ -10,9 +10,9 @@ def register(request):
         email     = request.POST.get("email")
         password  = request.POST.get("password")
         # create user logic here...
-        print(full_name)
-        print(email)
-        print(password)
+        print(" full_name is printing ")
+        print("email is working")
+        print("password is working")
         
         if User.objects.filter(username=email).exists():
             return redirect(f"/?modal=signup&error=exists")# ← back to home with error flag
@@ -22,9 +22,9 @@ def register(request):
             password=password
         )
         profile=UserProfile.objects.create(user=user)
-        print(user)
-        print(profile)
-        print(profile.plan)
+        print("user is working")
+        print("profile is working")
+        print("profile.plan is working")
         # we cannot define in model.py because in model.py 
         # we define database structure only not the logic of creating user  
         login(request, user)           # ← log them in immediately after signup
@@ -43,7 +43,7 @@ def login_user(request):
             username=email,
             password=password
         )
-        print(user)
+        print("user is working")
 
         # User does not exist
         if not User.objects.filter(username=email).exists():
