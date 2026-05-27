@@ -671,8 +671,8 @@
             </div>
 
             {# compute precise values — use length of actual lists, not the integer fields #}
-            {% with found_count=result.keywords_found_list|length
-            total_count=result.keywords_found_list|length|add:result.keyword_gaps|length %}
+            {% with found_count=result.keywords_found_list|length %}
+            {% with total_count=result.keywords_found_list|length|add:result.keyword_gaps|length %}
             <div class="kw-summary">
                 <div>
                     <div class="kw-found-count" id="kwCountDisplay">
@@ -691,6 +691,7 @@
                     </div>
                 </div>
             </div>
+            {% endwith %}
             {% endwith %}
 
             <div class="kw-cols">
