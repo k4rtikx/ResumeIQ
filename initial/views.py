@@ -63,10 +63,9 @@ def analyzer(request):
             return render(request, "analyzer.html", {"result": result})
         
         except Exception as e:
-            return HttpResponse(
-                f"AI service temporarily unavailable. Please try again later and Error: {str(e)}",
-                status=500
-            )
+            # Store the error in session so it survives the redirect
+            request.session["ai_error"] = str(e)
+            return redirect("mistake")
 
     # If someone visits /analyzer directly without POST, send them home
     return redirect("home")
@@ -79,3 +78,8 @@ def feature(request):
 
 def pricing(request):
     return render(request,'pricing.html',{})
+
+def mistake(request):
+    # Pop the error from session (one-time read — clears after display)
+    error_message = request.session.pop("ai_error", None)
+    return render(request, "mistake.html", {"error_message": error_message})
