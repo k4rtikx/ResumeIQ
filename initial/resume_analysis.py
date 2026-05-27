@@ -223,23 +223,26 @@ Job Title: {job_title}
         """
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
-
-    api_key = os.getenv("GEMINI_API_KEY")
-    client = genai.Client(api_key=api_key)
-
-    # Try models in order — best quality → fastest/lightest
-    for model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]:
+    # Try Gemini 2.5-flash first
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        return response.text
+    except Exception:
+        # Gemini failed — fallback to OpenAI
         try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt
+            from openai import OpenAI
+            openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            openai_response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3
             )
-            return response.text
-        except Exception:
-            continue
-
-    # All models failed
-    raise Exception("All Gemini models failed. Try again later.")
+            return openai_response.choices[0].message.content
+        except Exception as e:
+            raise Exception(f"All models failed. Error: {str(e)}")
     
 
 
