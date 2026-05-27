@@ -372,7 +372,13 @@
         flex-shrink: 0;
     }
 
-    /* KEYWORD ANALYSIS */
+    .empty-state {
+        color: var(--muted);
+        font-size: .82rem;
+        font-style: italic;
+        padding: .5rem 0;
+    }
+
     .kw-summary {
         display: flex;
         align-items: center;
@@ -426,7 +432,6 @@
         color: var(--rose);
     }
 
-    /* SECTION SCORES */
     .section-scores {
         display: flex;
         flex-direction: column;
@@ -470,7 +475,6 @@
         transition: width 1.4s cubic-bezier(.4, 0, .2, 1);
     }
 
-    /* RECRUITER FEEDBACK */
     .feedback-box {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -502,7 +506,6 @@
         background: var(--border);
     }
 
-    /* ANALYZE AGAIN */
     .again-row {
         margin-top: 3rem;
         text-align: center;
@@ -537,14 +540,6 @@
         opacity: .88;
         transform: translateY(-2px);
         box-shadow: 0 0 42px rgba(0, 212, 170, .55);
-    }
-
-    /* empty state for missing data */
-    .empty-state {
-        color: var(--muted);
-        font-size: .82rem;
-        font-style: italic;
-        padding: .5rem 0;
     }
 
     @media (max-width: 700px) {
@@ -669,31 +664,22 @@
                 <div class="sec-icon si-teal">&#128269;</div>
                 <span class="sec-title">Keyword Analysis</span>
             </div>
-
-            {# compute precise values — use length of actual lists, not the integer fields #}
-            {% with found_count=result.keywords_found_list|length %}
-            {% with total_count=result.keywords_found_list|length|add:result.keyword_gaps|length %}
             <div class="kw-summary">
                 <div>
-                    <div class="kw-found-count" id="kwCountDisplay">
-                        {% if found_count or total_count %}
-                        {{ found_count }}/{{ total_count }}
-                        {% else %}
-                        &#8212;
-                        {% endif %}
+                    <div class="kw-found-count">
+                        {{ result.keywords_found_list|length }}/{{
+                        result.keywords_found_list|length|add:result.keyword_gaps|length }}
                     </div>
                     <div class="kw-sub">keywords matched</div>
                 </div>
                 <div class="kw-track">
                     <div class="progress-track">
-                        <div class="progress-fill fill-ats" id="kwBar" data-found="{{ found_count }}"
-                            data-total="{{ total_count }}"></div>
+                        <div class="progress-fill fill-ats" id="kwBar"
+                            data-found="{{ result.keywords_found_list|length }}"
+                            data-total="{{ result.keywords_found_list|length|add:result.keyword_gaps|length }}"></div>
                     </div>
                 </div>
             </div>
-            {% endwith %}
-            {% endwith %}
-
             <div class="kw-cols">
                 <div>
                     <div class="kw-group-label found">&#10003; Found in Resume</div>
@@ -759,10 +745,8 @@
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Summary</span>
-                        <span class="score-row-val" style="color:var(--accent)">
-                            {% if result.section_scores %}{{ result.section_scores.summary|default:0 }}{% else %}0{%
-                            endif %}/10
-                        </span>
+                        <span class="score-row-val" style="color:var(--accent)">{% if result.section_scores %}{{
+                            result.section_scores.summary|default:0 }}{% else %}0{% endif %}/10</span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr0"
@@ -774,10 +758,8 @@
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Skills</span>
-                        <span class="score-row-val" style="color:var(--success)">
-                            {% if result.section_scores %}{{ result.section_scores.skills|default:0 }}{% else %}0{%
-                            endif %}/10
-                        </span>
+                        <span class="score-row-val" style="color:var(--success)">{% if result.section_scores %}{{
+                            result.section_scores.skills|default:0 }}{% else %}0{% endif %}/10</span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr1"
@@ -789,10 +771,8 @@
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Projects</span>
-                        <span class="score-row-val" style="color:#38bdf8">
-                            {% if result.section_scores %}{{ result.section_scores.projects|default:0 }}{% else %}0{%
-                            endif %}/10
-                        </span>
+                        <span class="score-row-val" style="color:#38bdf8">{% if result.section_scores %}{{
+                            result.section_scores.projects|default:0 }}{% else %}0{% endif %}/10</span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr2"
@@ -804,10 +784,8 @@
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Experience</span>
-                        <span class="score-row-val" style="color:var(--amber)">
-                            {% if result.section_scores %}{{ result.section_scores.experience|default:0 }}{% else %}0{%
-                            endif %}/10
-                        </span>
+                        <span class="score-row-val" style="color:var(--amber)">{% if result.section_scores %}{{
+                            result.section_scores.experience|default:0 }}{% else %}0{% endif %}/10</span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr3"
@@ -819,10 +797,8 @@
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Education</span>
-                        <span class="score-row-val" style="color:var(--rose)">
-                            {% if result.section_scores %}{{ result.section_scores.education|default:0 }}{% else %}0{%
-                            endif %}/10
-                        </span>
+                        <span class="score-row-val" style="color:var(--rose)">{% if result.section_scores %}{{
+                            result.section_scores.education|default:0 }}{% else %}0{% endif %}/10</span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr4"
@@ -862,11 +838,9 @@
 
 <script>
     window.addEventListener('DOMContentLoaded', function () {
-
         var atsScore = parseInt("{{ result.ats_score|default:0 }}") || 0;
         var matchScore = parseInt("{{ result.match_score|default:0 }}") || 0;
 
-        /* keyword bar — read from data attributes set by Django (list lengths) */
         var kwBar = document.getElementById('kwBar');
         var kwFound = kwBar ? parseInt(kwBar.getAttribute('data-found')) || 0 : 0;
         var kwTotal = kwBar ? parseInt(kwBar.getAttribute('data-total')) || 0 : 0;
@@ -877,12 +851,8 @@
 
             if (atsBar) atsBar.style.width = atsScore + '%';
             if (matchBar) matchBar.style.width = matchScore + '%';
+            if (kwBar && kwTotal > 0) kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
 
-            if (kwBar && kwTotal > 0) {
-                kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
-            }
-
-            /* section score bars */
             for (var i = 0; i < 5; i++) {
                 var bar = document.getElementById('sr' + i);
                 if (bar) {
