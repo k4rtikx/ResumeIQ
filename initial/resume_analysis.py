@@ -224,10 +224,18 @@ Job Title: {job_title}
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
-    )
+    try:
+        # Try the best model first
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+    except Exception:
+        # If 2.5-flash fails/times out, fall back to faster model
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
     return response.text
 
 
