@@ -580,7 +580,7 @@
         <div class="score-card ats">
             <span class="score-card-label">ATS Score</span>
             <div class="score-number-row">
-                <span class="score-number">{{ result.ats_score|default:0 }}%</span>
+                <span class="score-number" id="atsScoreNum">{{ result.ats_score }}%</span>
                 <div class="score-verdict">
                     {% if result.ats_score >= 60 %}
                     <span class="verdict-badge badge-pass">&#10003; ATS Passed</span>
@@ -592,7 +592,7 @@
             </div>
             <div class="progress-wrap">
                 <div class="progress-track">
-                    <div class="progress-fill fill-ats" id="atsBar"></div>
+                    <div class="progress-fill fill-ats" id="atsBar" data-val="{{ result.ats_score }}"></div>
                 </div>
                 <div class="progress-labels"><span>0</span><span>60% pass mark</span><span>100</span></div>
             </div>
@@ -601,7 +601,7 @@
         <div class="score-card match">
             <span class="score-card-label">Job Match</span>
             <div class="score-number-row">
-                <span class="score-number">{{ result.match_score|default:0 }}%</span>
+                <span class="score-number" id="matchScoreNum">{{ result.match_score }}%</span>
                 <div class="score-verdict">
                     {% if result.match_score >= 70 %}
                     <span class="verdict-badge badge-pass">Strong Match</span>
@@ -615,7 +615,7 @@
             </div>
             <div class="progress-wrap">
                 <div class="progress-track">
-                    <div class="progress-fill fill-match" id="matchBar"></div>
+                    <div class="progress-fill fill-match" id="matchBar" data-val="{{ result.match_score }}"></div>
                 </div>
                 <div class="progress-labels"><span>0</span><span>50% avg</span><span>100</span></div>
             </div>
@@ -675,7 +675,8 @@
                     <div class="progress-track">
                         <div class="progress-fill fill-ats" id="kwBar"
                             data-found="{{ result.keywords_found_list|length }}"
-                            data-total="{{ result.keywords_found_list|length|add:result.keyword_gaps|length }}"></div>
+                            data-total="{{ result.keywords_found_list|length|add:result.keyword_gaps|length }}">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -733,76 +734,69 @@
             </ul>
         </div>
 
-        <!-- SECTION SCORES -->
+        <!-- SECTION SCORES — values injected by JS from hidden data tags -->
         <div class="sec-card">
             <div class="sec-head">
                 <div class="sec-icon si-purple">&#128202;</div>
                 <span class="sec-title">Section-by-Section Review</span>
             </div>
+
+            <!-- Hidden data bridge: Django renders values here, JS reads them -->
+            <div id="sectionScoreData" data-summary="{{ result.section_scores.summary }}"
+                data-skills="{{ result.section_scores.skills }}" data-projects="{{ result.section_scores.projects }}"
+                data-experience="{{ result.section_scores.experience }}"
+                data-education="{{ result.section_scores.education }}" style="display:none">
+            </div>
+
             <div class="section-scores">
 
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Summary</span>
-                        <span class="score-row-val" style="color:var(--accent)">{% if result.section_scores %}{{
-                            result.section_scores.summary|default:0 }}{% else %}0{% endif %}/10</span>
+                        <span class="score-row-val" id="lblSummary" style="color:var(--accent)">—/10</span>
                     </div>
                     <div class="sr-track">
-                        <div class="sr-fill" id="sr0"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.summary|default:0 }}{% else %}0{% endif %}"
-                            style="background:var(--accent)"></div>
+                        <div class="sr-fill" id="srSummary" style="background:var(--accent)"></div>
                     </div>
                 </div>
 
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Skills</span>
-                        <span class="score-row-val" style="color:var(--success)">{% if result.section_scores %}{{
-                            result.section_scores.skills|default:0 }}{% else %}0{% endif %}/10</span>
+                        <span class="score-row-val" id="lblSkills" style="color:var(--success)">—/10</span>
                     </div>
                     <div class="sr-track">
-                        <div class="sr-fill" id="sr1"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.skills|default:0 }}{% else %}0{% endif %}"
-                            style="background:var(--success)"></div>
+                        <div class="sr-fill" id="srSkills" style="background:var(--success)"></div>
                     </div>
                 </div>
 
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Projects</span>
-                        <span class="score-row-val" style="color:#38bdf8">{% if result.section_scores %}{{
-                            result.section_scores.projects|default:0 }}{% else %}0{% endif %}/10</span>
+                        <span class="score-row-val" id="lblProjects" style="color:#38bdf8">—/10</span>
                     </div>
                     <div class="sr-track">
-                        <div class="sr-fill" id="sr2"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.projects|default:0 }}{% else %}0{% endif %}"
-                            style="background:#38bdf8"></div>
+                        <div class="sr-fill" id="srProjects" style="background:#38bdf8"></div>
                     </div>
                 </div>
 
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Experience</span>
-                        <span class="score-row-val" style="color:var(--amber)">{% if result.section_scores %}{{
-                            result.section_scores.experience|default:0 }}{% else %}0{% endif %}/10</span>
+                        <span class="score-row-val" id="lblExperience" style="color:var(--amber)">—/10</span>
                     </div>
                     <div class="sr-track">
-                        <div class="sr-fill" id="sr3"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.experience|default:0 }}{% else %}0{% endif %}"
-                            style="background:var(--amber)"></div>
+                        <div class="sr-fill" id="srExperience" style="background:var(--amber)"></div>
                     </div>
                 </div>
 
                 <div class="score-row">
                     <div class="score-row-head">
                         <span class="score-row-name">Education</span>
-                        <span class="score-row-val" style="color:var(--rose)">{% if result.section_scores %}{{
-                            result.section_scores.education|default:0 }}{% else %}0{% endif %}/10</span>
+                        <span class="score-row-val" id="lblEducation" style="color:var(--rose)">—/10</span>
                     </div>
                     <div class="sr-track">
-                        <div class="sr-fill" id="sr4"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.education|default:0 }}{% else %}0{% endif %}"
-                            style="background:var(--rose)"></div>
+                        <div class="sr-fill" id="srEducation" style="background:var(--rose)"></div>
                     </div>
                 </div>
 
@@ -837,28 +831,44 @@
 
 <script>
     window.addEventListener('DOMContentLoaded', function () {
-        var atsScore = parseInt("{{ result.ats_score|default:0 }}") || 0;
-        var matchScore = parseInt("{{ result.match_score|default:0 }}") || 0;
 
-        var kwBar = document.getElementById('kwBar');
-        var kwFound = kwBar ? parseInt(kwBar.getAttribute('data-found')) || 0 : 0;
-        var kwTotal = kwBar ? parseInt(kwBar.getAttribute('data-total')) || 0 : 0;
+        // ── Read section scores from hidden data element ──────────────────────
+        var sd = document.getElementById('sectionScoreData');
+        var scores = {
+            summary: parseInt(sd.getAttribute('data-summary')) || 0,
+            skills: parseInt(sd.getAttribute('data-skills')) || 0,
+            projects: parseInt(sd.getAttribute('data-projects')) || 0,
+            experience: parseInt(sd.getAttribute('data-experience')) || 0,
+            education: parseInt(sd.getAttribute('data-education')) || 0
+        };
 
+        // ── Animate everything after a short delay ────────────────────────────
         setTimeout(function () {
+
+            // ATS & Match progress bars
             var atsBar = document.getElementById('atsBar');
             var matchBar = document.getElementById('matchBar');
+            if (atsBar) atsBar.style.width = (parseInt(atsBar.getAttribute('data-val')) || 0) + '%';
+            if (matchBar) matchBar.style.width = (parseInt(matchBar.getAttribute('data-val')) || 0) + '%';
 
-            if (atsBar) atsBar.style.width = atsScore + '%';
-            if (matchBar) matchBar.style.width = matchScore + '%';
-            if (kwBar && kwTotal > 0) kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
-
-            for (var i = 0; i < 5; i++) {
-                var bar = document.getElementById('sr' + i);
-                if (bar) {
-                    var val = parseFloat(bar.getAttribute('data-val')) || 0;
-                    bar.style.width = (val * 10) + '%';
-                }
+            // Keyword bar
+            var kwBar = document.getElementById('kwBar');
+            if (kwBar) {
+                var found = parseInt(kwBar.getAttribute('data-found')) || 0;
+                var total = parseInt(kwBar.getAttribute('data-total')) || 0;
+                kwBar.style.width = total > 0 ? Math.round((found / total) * 100) + '%' : '0%';
             }
+
+            // Section score bars & labels
+            var sections = ['summary', 'skills', 'projects', 'experience', 'education'];
+            sections.forEach(function (key) {
+                var val = scores[key];
+                var bar = document.getElementById('sr' + key.charAt(0).toUpperCase() + key.slice(1));
+                var lbl = document.getElementById('lbl' + key.charAt(0).toUpperCase() + key.slice(1));
+                if (bar) bar.style.width = (val * 10) + '%';
+                if (lbl) lbl.textContent = val + '/10';
+            });
+
         }, 150);
     });
 </script>

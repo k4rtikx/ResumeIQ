@@ -96,10 +96,12 @@
 #1 Extraction of text from the PDF and clean it
 import fitz  # PyMuPDF
 import re
+import json
 
 def extract_text_from_pdf(pdf_path):
     # doc = fitz.open(pdf_path) # normally we do this but here not
     # basically we are taking <InMemoryUploadedFile> these are not the same thing.
+    pdf_path.seek(0)
     doc = fitz.open(
         stream=pdf_path.read(),
         filetype="pdf"#doc → PyMuPDF Document Not a path.
@@ -173,7 +175,7 @@ JSON format (follow exactly):
 }}
 
 Rules:
-- ats_score: integer 0-100. How well the resume passes ATS filters based on keyword density, formatting signals, and role relevance.
+- ats_score: integer 0-100. How well the resume passes ATS filters.
 - match_score: integer 0-100. Overall semantic match between resume and job description.
 - ats_passed: true if ats_score >= 60, false otherwise.
 - matched_skills: list of skills present in BOTH resume and job description.
@@ -184,8 +186,31 @@ Rules:
 - keyword_gaps: actual keyword strings missing from resume.
 - strong_points: list of resume strengths as specific sentences.
 - suggestions: list of actionable improvement recommendations.
-- section_scores: score each resume section from 0-10 based on quality and relevance.
+- section_scores: score each resume section 0-10 (must always include all 5 keys: summary, skills, projects, experience, education).
 - project_alignment: 2-3 sentence paragraph of overall recruiter-style feedback.
+Return exactly this JSON structure:
+{{
+    "ats_score": 0,
+    "match_score": 0,
+    "ats_passed": false,
+    "matched_skills": [],
+    "missing_skills": [],
+    "keywords_found": 0,
+    "keywords_total": 0,
+    "keywords_found_list": [],
+    "keyword_gaps": [],
+    "strong_points": [],
+    "weak_points": [],
+    "suggestions": [],
+    "section_scores": {{
+        "summary": 0,
+        "skills": 0,
+        "projects": 0,
+        "experience": 0,
+        "education": 0
+    }},
+    "project_alignment": ""
+}}
 
 Job Title: {job_title}
 
@@ -207,7 +232,33 @@ Job Title: {job_title}
 
 
 
-import json
+def clean_and_parse_json(response_text):
+    """Robustly strip markdown fences and parse JSON from Gemini response."""
+    text = response_text.strip()
+ 
+    # Strip ```json ... ``` or ``` ... ```
+    text = re.sub(r"^```(?:json)?\s*", "", text)
+    text = re.sub(r"\s*```$", "", text)
+    text = text.strip()
+ 
+    # Find the first { and last } to extract pure JSON
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
+ 
+    return json.loads(text)
+
+
+DEFAULT_SECTION_SCORES = {
+    "summary": 0,
+    "skills": 0,
+    "projects": 0,
+    "experience": 0,
+    "education": 0
+    }
+
+
 def gemini_resume_analyzer(resume,job_description,job_title):
     
     pdf_path = resume
@@ -226,19 +277,55 @@ def gemini_resume_analyzer(resume,job_description,job_title):
 
     # print(response.text)
 
-    import json
+    # Parse JSON robustly
+    data = clean_and_parse_json(response)
+ 
+    # ── Guarantee every expected key exists with a safe default ──────────────
+ 
+    data.setdefault("ats_score", 0)
+    data.setdefault("match_score", 0)
+    data.setdefault("ats_passed", data["ats_score"] >= 60)
+    data.setdefault("matched_skills", [])
+    data.setdefault("missing_skills", [])
+    data.setdefault("keywords_found", 0)
+    data.setdefault("keywords_total", 0)
+    data.setdefault("keywords_found_list", [])
+    data.setdefault("keyword_gaps", [])
+    data.setdefault("strong_points", [])
+    data.setdefault("weak_points", [])
+    data.setdefault("suggestions", [])
+    data.setdefault("project_alignment", "")
 
-    response_text = response.strip()
 
-    # Remove markdown if Gemini returns ```json ... ```
-    response_text = response_text.replace("```json", "")
-    response_text = response_text.replace("```", "")
-    response_text = response_text.strip()
-    data = json.loads(response_text)
-
-    print(data["match_score"])
-    print(data["matched_skills"])
-
+    # Guarantee section_scores is always a dict with all 5 keys
+    section_scores = data.get("section_scores")
+    if not isinstance(section_scores, dict):
+        section_scores = {}
+    for key, default in DEFAULT_SECTION_SCORES.items():
+        section_scores.setdefault(key, default)
+        # Ensure values are integers/floats, not strings
+        try:
+            section_scores[key] = int(section_scores[key])
+        except (TypeError, ValueError):
+            section_scores[key] = 0
+    data["section_scores"] = section_scores
+ 
+    # Ensure scores are integers
+    try:
+        data["ats_score"] = int(data["ats_score"])
+    except (TypeError, ValueError):
+        data["ats_score"] = 0
+    try:
+        data["match_score"] = int(data["match_score"])
+    except (TypeError, ValueError):
+        data["match_score"] = 0
+ 
+    # Debug prints
+    print("ATS Score:", data["ats_score"])
+    print("Match Score:", data["match_score"])
+    print("Section Scores:", data["section_scores"])
+    print("Matched Skills:", data["matched_skills"])
+ 
     return data
 
 # # Gemini ALWAYS returns valid JSON.
