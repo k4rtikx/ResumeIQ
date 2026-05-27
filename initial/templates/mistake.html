@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    main {
+        position: relative;
+        z-index: 1;
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 5rem 1.5rem 7rem;
+        animation: fadeUp .5s ease both;
+    }
+
+    /* CARD */
+    .error-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 3rem 2.25rem 2.25rem;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, .4), 0 0 0 1px rgba(251, 113, 133, .06);
+    }
+
+    .error-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--rose), #e11d48);
+    }
+
+    /* soft rose glow */
+    .error-card::after {
+        content: '';
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgba(251, 113, 133, .08) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    /* ANIMATED ICON */
+    .error-icon-wrap {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        margin: 0 auto 2rem;
+        z-index: 1;
+    }
+
+    .error-icon-ring {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: rgba(251, 113, 133, .08);
+        border: 1px solid rgba(251, 113, 133, .22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn .4s ease both;
+        position: relative;
+    }
+
+    .error-icon-ring svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* pulsing ring */
+    .error-pulse {
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        border: 1px solid rgba(251, 113, 133, .2);
+        animation: expand-ring 2s ease-in-out infinite;
+    }
+
+    .error-pulse-2 {
+        position: absolute;
+        inset: -14px;
+        border-radius: 50%;
+        border: 1px solid rgba(251, 113, 133, .1);
+        animation: expand-ring 2s ease-in-out infinite .4s;
+    }
+
+    @keyframes expand-ring {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(1.25);
+        }
+    }
+
+    /* ERROR CODE */
+    .error-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--rose);
+        background: rgba(251, 113, 133, .1);
+        border: 1px solid rgba(251, 113, 133, .2);
+        padding: .22rem .8rem;
+        border-radius: 999px;
+        display: inline-block;
+        margin-bottom: 1.1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* TITLE */
+    .error-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.65rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        margin-bottom: .5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .error-subtitle {
+        color: var(--muted);
+        font-size: .9rem;
+        line-height: 1.7;
+        max-width: 340px;
+        margin: 0 auto 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* WHAT WENT WRONG BOX */
+    .reason-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.2rem 1.4rem;
+        text-align: left;
+        margin-bottom: 1.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .reason-title {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: .75rem;
+        font-family: 'JetBrains Mono', monospace;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .reason-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .reason-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        font-size: .835rem;
+        color: var(--text2);
+        line-height: 1.5;
+    }
+
+    .reason-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--rose);
+        flex-shrink: 0;
+        margin-top: .45rem;
+    }
+
+    /* ERROR DETAIL (collapsible) */
+    .detail-toggle {
+        width: 100%;
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        font-family: 'Outfit', sans-serif;
+        font-size: .8rem;
+        font-weight: 500;
+        padding: .6rem 1rem;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: border-color .2s, color .2s, background .2s;
+        margin-bottom: 1.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .detail-toggle:hover {
+        border-color: var(--rose);
+        color: var(--rose);
+        background: rgba(251, 113, 133, .05);
+    }
+
+    .detail-toggle-icon {
+        transition: transform .3s;
+        font-size: .75rem;
+    }
+
+    .detail-toggle.open .detail-toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .detail-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.1rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: .76rem;
+        color: var(--rose);
+        line-height: 1.7;
+        text-align: left;
+        margin-top: -.5rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        z-index: 1;
+        display: none;
+        word-break: break-all;
+    }
+
+    .detail-box.open {
+        display: block;
+    }
+
+    /* ACTIONS */
+    .action-row {
+        display: flex;
+        gap: .75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-retry {
+        flex: 1;
+        background: var(--accent);
+        border: none;
+        color: #080c10;
+        padding: .75rem 1rem;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .9rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+        box-shadow: 0 0 22px rgba(0, 212, 170, .35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        text-decoration: none;
+    }
+
+    .btn-retry:hover {
+        opacity: .88;
+        transform: translateY(-1px);
+        box-shadow: 0 0 32px rgba(0, 212, 170, .5);
+    }
+
+    .btn-home {
+        flex: 1;
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--text2);
+        padding: .75rem 1rem;
+        border-radius: 10px;
+        font-family: 'Outfit', sans-serif;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .2s, color .2s, background .2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        text-decoration: none;
+    }
+
+    .btn-home:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-dim);
+    }
+
+    /* STATUS NOTE */
+    .status-note {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin-top: 1.5rem;
+        padding: .7rem 1rem;
+        background: rgba(245, 158, 11, .06);
+        border: 1px solid rgba(245, 158, 11, .15);
+        border-radius: 8px;
+        font-size: .77rem;
+        color: var(--muted);
+        position: relative;
+        z-index: 1;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--amber);
+        flex-shrink: 0;
+        animation: pulse 2s infinite;
+    }
+
+    /* RETRY COUNTER */
+    .retry-hint {
+        margin-top: 1rem;
+        font-size: .75rem;
+        color: var(--muted);
+        position: relative;
+        z-index: 1;
+        font-family: 'JetBrains Mono', monospace;
+    }
+</style>
+
+<main>
+    <div class="error-card">
+
+        <!-- ANIMATED ICON -->
+        <div class="error-icon-wrap">
+            <div class="error-icon-ring">
+                <div class="error-pulse"></div>
+                <div class="error-pulse-2"></div>
+                <!-- X icon -->
+                <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="18" cy="18" r="17" stroke="rgba(251,113,133,.3)" stroke-width="1.5" />
+                    <path d="M12 12 L24 24 M24 12 L12 24" stroke="var(--rose)" stroke-width="2.5"
+                        stroke-linecap="round" />
+                </svg>
+            </div>
+        </div>
+
+        <span class="error-code">AI_ERROR_500</span>
+
+        <div class="error-title">Something went wrong</div>
+        <p class="error-subtitle">
+            Our AI encountered a problem while analyzing your resume. This is usually temporary — please try again in a
+            moment.
+        </p>
+
+        <!-- WHAT WENT WRONG -->
+        <div class="reason-box">
+            <div class="reason-title">&#9888; What might have happened</div>
+            <ul class="reason-list">
+                <li><span class="reason-dot"></span>The AI service (Gemini) timed out or returned an unexpected response
+                </li>
+                <li><span class="reason-dot"></span>The PDF could not be parsed — try a different file or format</li>
+                <li><span class="reason-dot"></span>The job description may have been too long or contained unsupported
+                    characters</li>
+                <li><span class="reason-dot"></span>A temporary server-side issue — usually resolves on retry</li>
+            </ul>
+        </div>
+
+        <!-- COLLAPSIBLE ERROR DETAIL -->
+        {% if error_message %}
+        <button class="detail-toggle" id="detailToggle" onclick="toggleDetail()">
+            <span>&#128196; Show error details</span>
+            <span class="detail-toggle-icon">&#9660;</span>
+        </button>
+        <div class="detail-box" id="detailBox">
+            {{ error_message }}
+        </div>
+        {% endif %}
+
+        <!-- ACTIONS -->
+        <div class="action-row">
+            <a href="{% url 'home' %}" class="btn-retry">&#8635; Try Again</a>
+            <a href="{% url 'home' %}" class="btn-home">&#8592; Go Home</a>
+        </div>
+
+        <!-- STATUS -->
+        <div class="status-note">
+            <span class="status-dot"></span>
+            If this keeps happening, the AI service may be temporarily unavailable. Wait a minute and retry.
+        </div>
+
+        <div class="retry-hint" id="retryHint"></div>
+
+    </div>
+</main>
+
+<script>
+    /* Collapsible error detail */
+    function toggleDetail() {
+        var btn = document.getElementById('detailToggle');
+        var box = document.getElementById('detailBox');
+        if (!btn || !box) return;
+        btn.classList.toggle('open');
+        box.classList.toggle('open');
+        var label = btn.querySelector('span:first-child');
+        label.textContent = box.classList.contains('open')
+            ? '📄 Hide error details'
+            : '📄 Show error details';
+    }
+
+    /* Retry countdown hint */
+    (function () {
+        var hint = document.getElementById('retryHint');
+        if (!hint) return;
+        var secs = 30;
+        hint.textContent = 'Auto-suggestions refresh in ' + secs + 's';
+        var timer = setInterval(function () {
+            secs--;
+            if (secs <= 0) {
+                clearInterval(timer);
+                hint.textContent = 'Ready — click Try Again whenever you are.';
+                hint.style.color = 'var(--accent)';
+            } else {
+                hint.textContent = 'You can retry in ' + secs + 's';
+            }
+        }, 1000);
+    })();
+</script>
+
+{% endblock %}

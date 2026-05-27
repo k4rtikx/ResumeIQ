@@ -372,6 +372,7 @@
         flex-shrink: 0;
     }
 
+    /* KEYWORD ANALYSIS */
     .kw-summary {
         display: flex;
         align-items: center;
@@ -425,6 +426,7 @@
         color: var(--rose);
     }
 
+    /* SECTION SCORES */
     .section-scores {
         display: flex;
         flex-direction: column;
@@ -468,6 +470,7 @@
         transition: width 1.4s cubic-bezier(.4, 0, .2, 1);
     }
 
+    /* RECRUITER FEEDBACK */
     .feedback-box {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -499,6 +502,7 @@
         background: var(--border);
     }
 
+    /* ANALYZE AGAIN */
     .again-row {
         margin-top: 3rem;
         text-align: center;
@@ -533,6 +537,14 @@
         opacity: .88;
         transform: translateY(-2px);
         box-shadow: 0 0 42px rgba(0, 212, 170, .55);
+    }
+
+    /* empty state for missing data */
+    .empty-state {
+        color: var(--muted);
+        font-size: .82rem;
+        font-style: italic;
+        padding: .5rem 0;
     }
 
     @media (max-width: 700px) {
@@ -629,6 +641,8 @@
             <div class="pill-list">
                 {% for skill in result.matched_skills %}
                 <span class="pill pill-match">&#10003; {{ skill }}</span>
+                {% empty %}
+                <span class="empty-state">No matched skills detected.</span>
                 {% endfor %}
             </div>
         </div>
@@ -643,6 +657,8 @@
             <div class="pill-list">
                 {% for skill in result.missing_skills %}
                 <span class="pill pill-miss">&#10007; {{ skill }}</span>
+                {% empty %}
+                <span class="empty-state">No missing skills — great match!</span>
                 {% endfor %}
             </div>
         </div>
@@ -653,24 +669,38 @@
                 <div class="sec-icon si-teal">&#128269;</div>
                 <span class="sec-title">Keyword Analysis</span>
             </div>
+
+            {# compute precise values — use length of actual lists, not the integer fields #}
+            {% with found_count=result.keywords_found_list|length
+            total_count=result.keywords_found_list|length|add:result.keyword_gaps|length %}
             <div class="kw-summary">
                 <div>
-                    <div class="kw-found-count">{{ result.keywords_found|default:0 }}/{{ result.keywords_total|default:0
-                        }}</div>
+                    <div class="kw-found-count" id="kwCountDisplay">
+                        {% if found_count or total_count %}
+                        {{ found_count }}/{{ total_count }}
+                        {% else %}
+                        &#8212;
+                        {% endif %}
+                    </div>
                     <div class="kw-sub">keywords matched</div>
                 </div>
                 <div class="kw-track">
                     <div class="progress-track">
-                        <div class="progress-fill fill-ats" id="kwBar"></div>
+                        <div class="progress-fill fill-ats" id="kwBar" data-found="{{ found_count }}"
+                            data-total="{{ total_count }}"></div>
                     </div>
                 </div>
             </div>
+            {% endwith %}
+
             <div class="kw-cols">
                 <div>
                     <div class="kw-group-label found">&#10003; Found in Resume</div>
                     <div class="pill-list">
                         {% for kw in result.keywords_found_list %}
                         <span class="pill pill-match">{{ kw }}</span>
+                        {% empty %}
+                        <span class="empty-state">None detected</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -679,6 +709,8 @@
                     <div class="pill-list">
                         {% for kw in result.keyword_gaps %}
                         <span class="pill pill-miss">{{ kw }}</span>
+                        {% empty %}
+                        <span class="empty-state">No gaps — all keywords matched!</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -694,6 +726,8 @@
             <ul class="bullet-list">
                 {% for point in result.strong_points %}
                 <li><span class="dot-str">&#9679;</span> {{ point }}</li>
+                {% empty %}
+                <li><span class="empty-state">No strengths detected.</span></li>
                 {% endfor %}
             </ul>
         </div>
@@ -707,6 +741,8 @@
             <ul class="bullet-list">
                 {% for s in result.suggestions %}
                 <li><span class="dot-sug">&#8594;</span> {{ s }}</li>
+                {% empty %}
+                <li><span class="empty-state">No suggestions — resume looks strong!</span></li>
                 {% endfor %}
             </ul>
         </div>
@@ -723,12 +759,13 @@
                     <div class="score-row-head">
                         <span class="score-row-name">Summary</span>
                         <span class="score-row-val" style="color:var(--accent)">
-                            {% if result.section_scores %}{{ result.section_scores.summary }}{% else %}0{% endif %}/10
+                            {% if result.section_scores %}{{ result.section_scores.summary|default:0 }}{% else %}0{%
+                            endif %}/10
                         </span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr0"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.summary }}{% else %}0{% endif %}"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.summary|default:0 }}{% else %}0{% endif %}"
                             style="background:var(--accent)"></div>
                     </div>
                 </div>
@@ -737,12 +774,13 @@
                     <div class="score-row-head">
                         <span class="score-row-name">Skills</span>
                         <span class="score-row-val" style="color:var(--success)">
-                            {% if result.section_scores %}{{ result.section_scores.skills }}{% else %}0{% endif %}/10
+                            {% if result.section_scores %}{{ result.section_scores.skills|default:0 }}{% else %}0{%
+                            endif %}/10
                         </span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr1"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.skills }}{% else %}0{% endif %}"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.skills|default:0 }}{% else %}0{% endif %}"
                             style="background:var(--success)"></div>
                     </div>
                 </div>
@@ -751,12 +789,13 @@
                     <div class="score-row-head">
                         <span class="score-row-name">Projects</span>
                         <span class="score-row-val" style="color:#38bdf8">
-                            {% if result.section_scores %}{{ result.section_scores.projects }}{% else %}0{% endif %}/10
+                            {% if result.section_scores %}{{ result.section_scores.projects|default:0 }}{% else %}0{%
+                            endif %}/10
                         </span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr2"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.projects }}{% else %}0{% endif %}"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.projects|default:0 }}{% else %}0{% endif %}"
                             style="background:#38bdf8"></div>
                     </div>
                 </div>
@@ -765,13 +804,13 @@
                     <div class="score-row-head">
                         <span class="score-row-name">Experience</span>
                         <span class="score-row-val" style="color:var(--amber)">
-                            {% if result.section_scores %}{{ result.section_scores.experience }}{% else %}0
-                            {% endif %}/10
+                            {% if result.section_scores %}{{ result.section_scores.experience|default:0 }}{% else %}0{%
+                            endif %}/10
                         </span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr3"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.experience }}{% else %}0{% endif %}"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.experience|default:0 }}{% else %}0{% endif %}"
                             style="background:var(--amber)"></div>
                     </div>
                 </div>
@@ -780,12 +819,13 @@
                     <div class="score-row-head">
                         <span class="score-row-name">Education</span>
                         <span class="score-row-val" style="color:var(--rose)">
-                            {% if result.section_scores %}{{ result.section_scores.education }}{% else %}0{% endif %}/10
+                            {% if result.section_scores %}{{ result.section_scores.education|default:0 }}{% else %}0{%
+                            endif %}/10
                         </span>
                     </div>
                     <div class="sr-track">
                         <div class="sr-fill" id="sr4"
-                            data-val="{% if result.section_scores %}{{ result.section_scores.education }}{% else %}0{% endif %}"
+                            data-val="{% if result.section_scores %}{{ result.section_scores.education|default:0 }}{% else %}0{% endif %}"
                             style="background:var(--rose)"></div>
                     </div>
                 </div>
@@ -800,7 +840,11 @@
                 <span class="sec-title">AI Recruiter Feedback</span>
             </div>
             <div class="feedback-box">
+                {% if result.project_alignment %}
                 {{ result.project_alignment }}
+                {% else %}
+                <span class="empty-state">No feedback generated.</span>
+                {% endif %}
                 <div class="feedback-author">ResumeIQ AI &middot; Based on your resume &amp; JD</div>
             </div>
         </div>
@@ -817,19 +861,27 @@
 
 <script>
     window.addEventListener('DOMContentLoaded', function () {
+
         var atsScore = parseInt("{{ result.ats_score|default:0 }}") || 0;
         var matchScore = parseInt("{{ result.match_score|default:0 }}") || 0;
-        var kwFound = parseInt("{{ result.keywords_found|default:0 }}") || 0;
-        var kwTotal = parseInt("{{ result.keywords_total|default:1 }}") || 1;
+
+        /* keyword bar — read from data attributes set by Django (list lengths) */
+        var kwBar = document.getElementById('kwBar');
+        var kwFound = kwBar ? parseInt(kwBar.getAttribute('data-found')) || 0 : 0;
+        var kwTotal = kwBar ? parseInt(kwBar.getAttribute('data-total')) || 0 : 0;
 
         setTimeout(function () {
             var atsBar = document.getElementById('atsBar');
             var matchBar = document.getElementById('matchBar');
-            var kwBar = document.getElementById('kwBar');
+
             if (atsBar) atsBar.style.width = atsScore + '%';
             if (matchBar) matchBar.style.width = matchScore + '%';
-            if (kwBar) kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
 
+            if (kwBar && kwTotal > 0) {
+                kwBar.style.width = Math.round((kwFound / kwTotal) * 100) + '%';
+            }
+
+            /* section score bars */
             for (var i = 0; i < 5; i++) {
                 var bar = document.getElementById('sr' + i);
                 if (bar) {
