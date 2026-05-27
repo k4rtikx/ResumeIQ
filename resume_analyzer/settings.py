@@ -181,9 +181,19 @@ AUTHENTICATION_BACKENDS = (
 )
 
 SOCIALACCOUNT_LOGIN_ON_GET = True  # direct google auth page no confirmation page
-LOGIN_REDIRECT_URL = '/dashboard/'   # or '/' for home
+LOGIN_REDIRECT_URL = '/users/dashboard/'   # dashboard is registered under users/ prefix
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # skip email confirmation for now
+
+# Allow Google login to connect to an existing account with the same email
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+# Allauth account settings
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 
 
