@@ -231,19 +231,22 @@ Job Title: {job_title}
         )
         return response.text
     except Exception:
-        # Gemini failed — fallback to OpenAI
+        # Gemini failed — fallback to Groq (free, fast)
         try:
             from openai import OpenAI
-            openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            openai_response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+            groq_client = OpenAI(
+                api_key=os.getenv("GROQ_API_KEY"),
+                base_url="https://api.groq.com/openai/v1"
+            )
+            groq_response = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3
             )
-            return openai_response.choices[0].message.content
+            return groq_response.choices[0].message.content
         except Exception as e:
             raise Exception(f"All models failed. Error: {str(e)}")
-    
+
 
 
 
