@@ -224,19 +224,23 @@ Job Title: {job_title}
     api_key = os.getenv("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
-    try:
-        # Try the best model first
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-    except Exception:
-        # If 2.5-flash fails/times out, fall back to faster model
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt
-        )
-    return response.text
+    api_key = os.getenv("GEMINI_API_KEY")
+    client = genai.Client(api_key=api_key)
+
+    # Try models in order — best quality → fastest/lightest
+    for model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"]:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt
+            )
+            return response.text
+        except Exception:
+            continue
+
+    # All models failed
+    raise Exception("All Gemini models failed. Try again later.")
+    
 
 
 
