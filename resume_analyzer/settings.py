@@ -96,7 +96,7 @@ from dotenv import load_dotenv
 import os
 import dj_database_url
 import os
-load_dotenv()
+load_dotenv(override=False)  # Docker env vars take priority over .env file
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
@@ -199,7 +199,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=False)  # Docker env vars take priority over .env file
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = "smtp.gmail.com"
