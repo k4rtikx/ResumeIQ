@@ -1,10 +1,12 @@
-# GitHub Linguist — ResumeIQ language configuration
-# Strategy: exclude all HTML, then re-enable only 3 key functional templates
+# GitHub Linguist — ResumeIQ
+# Calculated precisely using actual file byte sizes:
+#   Total Python = 35,941 bytes
+#   Keeping 2 smallest HTML templates = 15,059 bytes
+#   Expected result: Python ~70%, HTML ~29%, Dockerfile ~0.3%
 
-# Step 1: Exclude ALL HTML
+# Exclude ALL HTML
 *.html linguist-detectable=false
 
-# Step 2: Re-enable only the most important app templates (small, functional)
-templates/base.html                                        linguist-detectable=true
-initial/templates/analyzer.html                            linguist-detectable=true
-users/templates/registration/password_reset_form.html      linguist-detectable=true
+# Re-enable only the 2 smallest templates (auth pages — real functional code)
+users/templates/registration/password_reset_form.html     linguist-detectable=true
+users/templates/registration/password_reset_complete.html linguist-detectable=true
