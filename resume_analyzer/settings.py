@@ -91,19 +91,18 @@ WSGI_APPLICATION = "resume_analyzer.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 from dotenv import load_dotenv
 import os
 import dj_database_url
 import os
-
+load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL)
-    }
+    }#Django was connecting to Neon because DATABASE_URL existed
 else:
     DATABASES = {
         "default": {
@@ -114,11 +113,10 @@ else:
             "HOST": os.getenv("DB_HOST", "localhost"),
             "PORT": os.getenv("DB_PORT", "5432"),
         }
-    }
+}
 
 
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
