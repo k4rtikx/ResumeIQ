@@ -1,0 +1,5 @@
+# Tell GitHub Linguist to ignore HTML templates when calculating language stats
+# This ensures Python shows as the primary language of this Django project
+
+templates/ linguist-detectable=false
+*/templates/ linguist-detectable=false
