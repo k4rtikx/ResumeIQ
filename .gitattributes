@@ -1,17 +1,10 @@
-# GitHub Linguist configuration for ResumeIQ (Django project)
-# Goal: Python dominant, with realistic HTML/CSS/Dockerfile mix
+# GitHub Linguist — ResumeIQ language configuration
+# Strategy: exclude all HTML, then re-enable only 3 key functional templates
 
-# Exclude large marketing/landing page templates (not the core app logic)
-initial/templates/main.html linguist-detectable=false
-initial/templates/pricing.html linguist-detectable=false
-initial/templates/feature.html linguist-detectable=false
-initial/templates/works.html linguist-detectable=false
+# Step 1: Exclude ALL HTML
+*.html linguist-detectable=false
 
-# Keep these visible — they are the actual app (analyzer, dashboard, auth)
-# initial/templates/analyzer.html  → stays visible
-# initial/templates/mistake.html   → stays visible
-# users/templates/dashboard.html   → stays visible
-# users/templates/registration/    → stays visible
-# templates/base.html              → stays visible
-
-# CSS and JavaScript are always detectable (default GitHub behavior)
+# Step 2: Re-enable only the most important app templates (small, functional)
+templates/base.html                                        linguist-detectable=true
+initial/templates/analyzer.html                            linguist-detectable=true
+users/templates/registration/password_reset_form.html      linguist-detectable=true
