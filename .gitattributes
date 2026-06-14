@@ -1,4 +1,17 @@
-# Tell GitHub Linguist to ignore all HTML files (Django templates)
-# This ensures Python shows as the primary language of this Django project
+# GitHub Linguist configuration for ResumeIQ (Django project)
+# Goal: Python dominant, with realistic HTML/CSS/Dockerfile mix
 
-*.html linguist-detectable=false
+# Exclude large marketing/landing page templates (not the core app logic)
+initial/templates/main.html linguist-detectable=false
+initial/templates/pricing.html linguist-detectable=false
+initial/templates/feature.html linguist-detectable=false
+initial/templates/works.html linguist-detectable=false
+
+# Keep these visible — they are the actual app (analyzer, dashboard, auth)
+# initial/templates/analyzer.html  → stays visible
+# initial/templates/mistake.html   → stays visible
+# users/templates/dashboard.html   → stays visible
+# users/templates/registration/    → stays visible
+# templates/base.html              → stays visible
+
+# CSS and JavaScript are always detectable (default GitHub behavior)
